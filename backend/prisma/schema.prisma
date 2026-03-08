@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  username  String  @unique
+  password  String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  resources CodingResource[]
+  problems  CodingProblem[]
+  activities UserActivity[]
+  bookmarkedArticles BookmarkedArticle[]
+  
+  @@map("users")
+}
+
+model NewsArticle {
+  id          Int     @id @default(autoincrement())
+  title       String
+  url         String  @unique
+  source      String
+  tag         String  @default("research")
+  region      String
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  bookmarkedBy BookmarkedArticle[]
+  
+  @@map("news_articles")
+}
+
+model BookmarkedArticle {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  articleId Int
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   NewsArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, articleId])
+  @@map("bookmarked_articles")
+}
+
+model CodingResource {
+  id         Int     @id @default(autoincrement())
+  userId     Int
+  title      String
+  url        String
+  type       String
+  category   String
+  language   String
+  rating     Int @default(0)
+  progress   Int @default(0)
+  reason     String?
+  visibility String @default("private")
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("coding_resources")
+}
+
+model CodingProblem {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  language  String
+  tag       String
+  status    String @default("todo")
+  problem   String?
+  solution  String?
+  learned   String?
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("coding_problems")
+}
+
+model UserActivity {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  date      DateTime
+  type      String
+  count     Int @default(1)
+  
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date, type])
+  @@map("user_activities")
+}

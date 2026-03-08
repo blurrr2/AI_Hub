@@ -1,0 +1,1151 @@
+﻿import { useNavigate } from "react-router-dom";
+import { Sidebar } from "../components/Sidebar";
+import { useEffect, useState } from "react";
+
+interface Problem {
+    id: string;
+    title: string;
+    type: string;
+    status: string;
+    difficulty?: string;
+    language?: string;
+    problem?: string;
+    solution?: string;
+    learned?: string;
+    createdAt: string;
+}
+
+export default function Journal() {
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const [problems, setProblems] = useState<Problem[]>([]);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [typeFilter, setTypeFilter] = useState<string | null>(null);
+
+    // Modal state
+    const [showModal, setShowModal] = useState(false);
+    const [selectedType, setSelectedType] = useState<string>("");
+    const [formData, setFormData] = useState({
+        title: "",
+        language: "JavaScript",
+        topic: "General",
+        status: "Open",
+        problem: "",
+        solution: "",
+        learned: "",
+    });
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        const fetchProblems = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(
+                    "http://localhost:3001/api/problems",
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    },
+                );
+                if (!response.ok) throw new Error("Failed to fetch");
+                const data = await response.json();
+                setProblems(data);
+                if (data.length > 0) setSelectedId(data[0].id);
+            } catch {
+                setError("Failed to load problems");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProblems();
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+    };
+
+    const selected = problems.find((p) => p.id === selectedId);
+    const filtered = problems.filter((p) => {
+        if (typeFilter && p.type !== typeFilter) return false;
+        if (
+            searchQuery &&
+            !p.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+            return false;
+        return true;
+    });
+
+    return (
+        <div
+            style={{
+                display: "flex",
+                height: "100vh",
+                overflow: "hidden",
+                fontFamily: "Inter, sans-serif",
+            }}
+        >
+            <Sidebar user={user} onLogout={handleLogout} />
+
+            {/* RIGHT MAIN AREA */}
+            <div
+                style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
+                }}
+            >
+                {/* TOPBAR - Single row */}
+                <div
+                    style={{
+                        background: "#fff",
+                        borderBottom: "1px solid #e1ddd4",
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "14px 24px",
+                        gap: "16px",
+                        minHeight: "52px",
+                    }}
+                >
+                    {/* Title */}
+                    <h2
+                        style={{
+                            margin: 0,
+                            padding: 0,
+                            fontSize: 20,
+                            fontWeight: 700,
+                            fontFamily: "Inter, sans-serif",
+                            letterSpacing: "-0.3px",
+                            color: "#0f1117",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        Journal
+                    </h2>
+
+                    {/* Divider */}
+                    <div
+                        style={{
+                            width: "1px",
+                            height: "24px",
+                            background: "#e1ddd4",
+                        }}
+                    />
+
+                    {/* Search */}
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            flex: "0 0 180px",
+                            padding: "6px 10px",
+                            fontSize: "13px",
+                            border: "1px solid #e1ddd4",
+                            borderRadius: "4px",
+                            fontFamily: "Inter, sans-serif",
+                        }}
+                    />
+
+                    {/* Filter Pills */}
+                    <div style={{ display: "flex", gap: "6px" }}>
+                        {[
+                            { label: "馃悰 Bug", value: "bug" },
+                            { label: "馃挕 Solution", value: "solution" },
+                            { label: "馃摑 Note", value: "note" },
+                            { label: "馃З Challenge", value: "challenge" },
+                        ].map((f) => (
+                            <button
+                                key={f.value}
+                                onClick={() =>
+                                    setTypeFilter(
+                                        typeFilter === f.value ? null : f.value,
+                                    )
+                                }
+                                style={{
+                                    padding: "4px 10px",
+                                    fontSize: "12px",
+                                    border: "1px solid",
+                                    borderColor:
+                                        typeFilter === f.value
+                                            ? "#c8401a"
+                                            : "#e1ddd4",
+                                    background:
+                                        typeFilter === f.value
+                                            ? "#fff5e6"
+                                            : "#fff",
+                                    color:
+                                        typeFilter === f.value
+                                            ? "#c8401a"
+                                            : "#5a5450",
+                                    borderRadius: "12px",
+                                    cursor: "pointer",
+                                    fontWeight:
+                                        typeFilter === f.value ? 600 : 400,
+                                    transition: "all 0.2s",
+                                }}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* ✍️ New Entry Button */}
+                    <button
+                        onClick={() => {
+                            setShowModal(true);
+                            setSelectedType("");
+                            setFormData({
+                                title: "",
+                                language: "JavaScript",
+                                topic: "General",
+                                status: "Open",
+                                problem: "",
+                                solution: "",
+                                learned: "",
+                            });
+                        }}
+                        style={{
+                            marginLeft: "auto",
+                            padding: "6px 14px",
+                            fontSize: "13px",
+                            background: "#c8401a",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#a63015";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "#c8401a";
+                        }}
+                    >
+                        锟?✍️ New Entry
+                    </button>
+                </div>
+
+                {/* SPLIT BODY */}
+                <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+                    {/* LEFT: Entry List Panel - 300px */}
+                    <div
+                        style={{
+                            width: "300px",
+                            flex: "0 0 300px",
+                            background: "#fff",
+                            borderRight: "1px solid #e1ddd4",
+                            overflowY: "auto",
+                            display: "flex",
+                            flexDirection: "column",
+                        }}
+                    >
+                        {loading ? (
+                            <div
+                                style={{
+                                    padding: "24px",
+                                    color: "#5a5450",
+                                    textAlign: "center",
+                                }}
+                            >
+                                Loading...
+                            </div>
+                        ) : error ? (
+                            <div
+                                style={{
+                                    padding: "24px",
+                                    color: "#da3633",
+                                    textAlign: "center",
+                                }}
+                            >
+                                {error}
+                            </div>
+                        ) : filtered.length === 0 ? (
+                            <div
+                                style={{
+                                    padding: "24px",
+                                    color: "#8b949e",
+                                    textAlign: "center",
+                                }}
+                            >
+                                No entries
+                            </div>
+                        ) : (
+                            filtered.map((problem) => (
+                                <div
+                                    key={problem.id}
+                                    onClick={() => setSelectedId(problem.id)}
+                                    style={{
+                                        padding: "12px",
+                                        borderBottom: "1px solid #f0f0f0",
+                                        cursor: "pointer",
+                                        background:
+                                            selectedId === problem.id
+                                                ? "#f9f9f9"
+                                                : "#fff",
+                                        borderLeft:
+                                            selectedId === problem.id
+                                                ? "3px solid #c8401a"
+                                                : "3px solid transparent",
+                                        transition: "all 0.2s",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (selectedId !== problem.id) {
+                                            e.currentTarget.style.background =
+                                                "#fafafa";
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (selectedId !== problem.id) {
+                                            e.currentTarget.style.background =
+                                                "#fff";
+                                        }
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "13px",
+                                            fontWeight: 600,
+                                            color: "#0f1117",
+                                            marginBottom: "4px",
+                                        }}
+                                    >
+                                        {problem.title}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            gap: "6px",
+                                            marginBottom: "4px",
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: "11px",
+                                                background: "#f0f0f0",
+                                                color: "#5a5450",
+                                                padding: "2px 6px",
+                                                borderRadius: "2px",
+                                            }}
+                                        >
+                                            {problem.type}
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: "11px",
+                                                background:
+                                                    problem.status === "solved"
+                                                        ? "#d4edda"
+                                                        : "#fff3cd",
+                                                color:
+                                                    problem.status === "solved"
+                                                        ? "#155724"
+                                                        : "#856404",
+                                                padding: "2px 6px",
+                                                borderRadius: "2px",
+                                            }}
+                                        >
+                                            {problem.status}
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: "11px",
+                                            color: "#8b949e",
+                                        }}
+                                    >
+                                        {new Date(
+                                            problem.createdAt,
+                                        ).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* RIGHT: Editor Area - flex:1 */}
+                    <div
+                        style={{
+                            flex: 1,
+                            background: "#f7f5f0",
+                            overflowY: "auto",
+                            padding: "24px",
+                        }}
+                    >
+                        {!selected ? (
+                            <div
+                                style={{
+                                    textAlign: "center",
+                                    color: "#8b949e",
+                                    marginTop: "60px",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: "48px",
+                                        marginBottom: "16px",
+                                    }}
+                                >
+                                    馃摂
+                                </div>
+                                <h3
+                                    style={{
+                                        fontSize: "18px",
+                                        fontWeight: 600,
+                                        color: "#5a5450",
+                                        margin: "0 0 8px 0",
+                                    }}
+                                >
+                                    No Entry Selected
+                                </h3>
+                                <p style={{ margin: 0, fontSize: "14px" }}>
+                                    Choose an entry from the left or create a
+                                    new one
+                                </p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div
+                                    style={{
+                                        marginBottom: "20px",
+                                        paddingBottom: "16px",
+                                        borderBottom: "1px solid #e1ddd4",
+                                    }}
+                                >
+                                    <h2
+                                        style={{
+                                            margin: "0 0 8px 0",
+                                            fontSize: 20,
+                                            fontWeight: 700,
+                                            fontFamily: "Inter, sans-serif",
+                                            color: "#0f1117",
+                                        }}
+                                    >
+                                        {selected.title}
+                                    </h2>
+                                    <div
+                                        style={{ display: "flex", gap: "12px" }}
+                                    >
+                                        <span
+                                            style={{
+                                                fontSize: "12px",
+                                                background: "#e1ddd4",
+                                                color: "#5a5450",
+                                                padding: "4px 10px",
+                                                borderRadius: "3px",
+                                            }}
+                                        >
+                                            Type: {selected.type}
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: "12px",
+                                                background: "#e1ddd4",
+                                                color: "#5a5450",
+                                                padding: "4px 10px",
+                                                borderRadius: "3px",
+                                            }}
+                                        >
+                                            Status: {selected.status}
+                                        </span>
+                                        {selected.language && (
+                                            <span
+                                                style={{
+                                                    fontSize: "12px",
+                                                    background: "#e1ddd4",
+                                                    color: "#5a5450",
+                                                    padding: "4px 10px",
+                                                    borderRadius: "3px",
+                                                }}
+                                            >
+                                                Lang: {selected.language}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Problem Section */}
+                                {selected.problem && (
+                                    <div style={{ marginBottom: "20px" }}>
+                                        <h4
+                                            style={{
+                                                fontSize: "13px",
+                                                fontWeight: 700,
+                                                color: "#0f1117",
+                                                margin: "0 0 8px 0",
+                                            }}
+                                        >
+                                            鈿狅笍 Problem
+                                        </h4>
+                                        <p
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "13px",
+                                                color: "#5a5450",
+                                                whiteSpace: "pre-wrap",
+                                                lineHeight: "1.5",
+                                            }}
+                                        >
+                                            {selected.problem}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Solution Section */}
+                                {selected.solution && (
+                                    <div style={{ marginBottom: "20px" }}>
+                                        <h4
+                                            style={{
+                                                fontSize: "13px", fontWeight: 700, color: "#0f1117", margin: "0 0 8px 0",
+                                            }}
+                                        >
+                                            锟?Solution
+                                        </h4>
+                                        <p
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "13px",
+                                                color: "#5a5450",
+                                                whiteSpace: "pre-wrap",
+                                                lineHeight: "1.5",
+                                            }}
+                                        >
+                                            {selected.solution}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Learned Section */}
+                                {selected.learned && (
+                                    <div>
+                                        <h4
+                                            style={{
+                                                fontSize: "13px",
+                                                fontWeight: 700,
+                                                color: "#0f1117",
+                                                margin: "0 0 8px 0",
+                                            }}
+                                        >
+                                            馃摑 What I Learned
+                                        </h4>
+                                        <p
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "13px",
+                                                color: "#5a5450",
+                                                whiteSpace: "pre-wrap",
+                                                lineHeight: "1.5",
+                                            }}
+                                        >
+                                            {selected.learned}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* ✍️ New Entry MODAL */}
+            {showModal && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                    }}
+                    onClick={() => setShowModal(false)}
+                >
+                    <div
+                        style={{
+                            background: "#fff",
+                            borderRadius: "8px",
+                            boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
+                            width: "90%",
+                            maxWidth: "700px",
+                            maxHeight: "90vh",
+                            display: "flex",
+                            flexDirection: "column",
+                            overflow: "hidden",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* MODAL HEADER */}
+                        <div
+                            style={{
+                                padding: "24px",
+                                borderBottom: "1px solid #e1ddd4",
+                                display: "flex",
+                                alignItems: "flex-start",
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: "28px",
+                                        marginBottom: "8px",
+                                    }}
+                                >
+                                    鉁嶏笍
+                                </div>
+                                <h3
+                                    style={{
+                                        fontSize: "20px",
+                                        fontWeight: 700,
+                                        color: "#0f1117",
+                                        margin: 0,
+                                        marginBottom: "4px",
+                                    }}
+                                >
+                                    New Journal Entry
+                                </h3>
+                                <p
+                                    style={{
+                                        fontSize: "13px",
+                                        color: "#8b949e",
+                                        margin: 0,
+                                    }}
+                                >
+                                    Capture your learning journey
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{
+                                    background: "none",
+                                    border: "none",
+                                    fontSize: "24px",
+                                    cursor: "pointer",
+                                    color: "#8b949e",
+                                    padding: 0,
+                                    width: "32px",
+                                    height: "32px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                锟?
+                            </button>
+                        </div>
+
+                        {/* MODAL BODY */}
+                        <div
+                            style={{
+                                flex: 1,
+                                overflowY: "auto",
+                                padding: "24px",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "20px",
+                            }}
+                        >
+                            {/* TYPE SELECTION GRID */}
+                            <div>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: "13px",
+                                        fontWeight: 600,
+                                        color: "#0f1117",
+                                        marginBottom: "12px",
+                                    }}
+                                >
+                                    Entry Type
+                                </label>
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(4, 1fr)",
+                                        gap: "12px",
+                                    }}
+                                >
+                                    {[
+                                        {
+                                            icon: "馃悰",
+                                            label: "Bug Log",
+                                            value: "bug",
+                                        },
+                                        {
+                                            icon: "馃挕",
+                                            label: "Solution",
+                                            value: "solution",
+                                        },
+                                        {
+                                            icon: "馃摑",
+                                            label: "Daily Note",
+                                            value: "note",
+                                        },
+                                        {
+                                            icon: "馃З",
+                                            label: "Challenge",
+                                            value: "challenge",
+                                        },
+                                    ].map((type) => (
+                                        <div
+                                            key={type.value}
+                                            onClick={() =>
+                                                setSelectedType(type.value)
+                                            }
+                                            style={{
+                                                padding: "16px",
+                                                border:
+                                                    selectedType === type.value
+                                                        ? "2px solid #c8401a"
+                                                        : "1px solid #e1ddd4",
+                                                borderRadius: "6px",
+                                                background:
+                                                    selectedType === type.value
+                                                        ? "#fff5e6"
+                                                        : "#f9f9f9",
+                                                cursor: "pointer",
+                                                textAlign: "center",
+                                                transition: "all 0.2s",
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (
+                                                    selectedType !== type.value
+                                                ) {
+                                                    e.currentTarget.style.borderColor =
+                                                        "#d0ccc3";
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (
+                                                    selectedType !== type.value
+                                                ) {
+                                                    e.currentTarget.style.borderColor =
+                                                        "#e1ddd4";
+                                                }
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    fontSize: "24px",
+                                                    marginBottom: "6px",
+                                                }}
+                                            >
+                                                {type.icon}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "12px",
+                                                    fontWeight: 600,
+                                                    color:
+                                                        selectedType ===
+                                                        type.value
+                                                            ? "#c8401a"
+                                                            : "#5a5450",
+                                                }}
+                                            >
+                                                {type.label}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* TITLE INPUT */}
+                            <div>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: "13px",
+                                        fontWeight: 600,
+                                        color: "#0f1117",
+                                        marginBottom: "6px",
+                                    }}
+                                >
+                                    Title
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            title: e.target.value,
+                                        })
+                                    }
+                                    placeholder="What's the title of this entry?"
+                                    style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        fontSize: "14px",
+                                        border: "1px solid #e1ddd4",
+                                        borderRadius: "4px",
+                                        fontFamily: "Inter, sans-serif",
+                                        boxSizing: "border-box",
+                                    }}
+                                />
+                            </div>
+
+                            {/* LANGUAGE + TOPIC ROW */}
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr",
+                                    gap: "12px",
+                                }}
+                            >
+                                <div>
+                                    <label
+                                        style={{
+                                            display: "block",
+                                            fontSize: "13px",
+                                            fontWeight: 600,
+                                            color: "#0f1117",
+                                            marginBottom: "6px",
+                                        }}
+                                    >
+                                        Language
+                                    </label>
+                                    <select
+                                        value={formData.language}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                language: e.target.value,
+                                            })
+                                        }
+                                        style={{
+                                            width: "100%",
+                                            padding: "8px 12px",
+                                            fontSize: "14px",
+                                            border: "1px solid #e1ddd4",
+                                            borderRadius: "4px",
+                                            fontFamily: "Inter, sans-serif",
+                                        }}
+                                    >
+                                        <option>JavaScript</option>
+                                        <option>TypeScript</option>
+                                        <option>Python</option>
+                                        <option>Java</option>
+                                        <option>C++</option>
+                                        <option>Go</option>
+                                        <option>Rust</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        style={{
+                                            display: "block",
+                                            fontSize: "13px",
+                                            fontWeight: 600,
+                                            color: "#0f1117",
+                                            marginBottom: "6px",
+                                        }}
+                                    >
+                                        Topic Tag
+                                    </label>
+                                    <select
+                                        value={formData.topic}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                topic: e.target.value,
+                                            })
+                                        }
+                                        style={{
+                                            width: "100%",
+                                            padding: "8px 12px",
+                                            fontSize: "14px",
+                                            border: "1px solid #e1ddd4",
+                                            borderRadius: "4px",
+                                            fontFamily: "Inter, sans-serif",
+                                        }}
+                                    >
+                                        <option>General</option>
+                                        <option>Algorithms</option>
+                                        <option>Data Structures</option>
+                                        <option>React</option>
+                                        <option>Web Dev</option>
+                                        <option>Backend</option>
+                                        <option>Database</option>
+                                        <option>DevOps</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* STATUS SELECTOR */}
+                            <div>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: "13px",
+                                        fontWeight: 600,
+                                        color: "#0f1117",
+                                        marginBottom: "8px",
+                                    }}
+                                >
+                                    Initial Status
+                                </label>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: "8px",
+                                    }}
+                                >
+                                    {["Open", "Learning", "Solved"].map(
+                                        (status) => (
+                                            <button
+                                                key={status}
+                                                onClick={() =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        status,
+                                                    })
+                                                }
+                                                style={{
+                                                    flex: 1,
+                                                    padding: "8px",
+                                                    fontSize: "13px",
+                                                    fontWeight: 600,
+                                                    border:
+                                                        formData.status ===
+                                                        status
+                                                            ? "2px solid #c8401a"
+                                                            : "1px solid #e1ddd4",
+                                                    borderRadius: "4px",
+                                                    background:
+                                                        formData.status ===
+                                                        status
+                                                            ? "#fff5e6"
+                                                            : "#f9f9f9",
+                                                    color:
+                                                        formData.status ===
+                                                        status
+                                                            ? "#c8401a"
+                                                            : "#5a5450",
+                                                    cursor: "pointer",
+                                                    transition: "all 0.2s",
+                                                }}
+                                            >
+                                                {status}
+                                            </button>
+                                        ),
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* PREVIEW STRIP */}
+                            {(formData.title ||
+                                selectedType ||
+                                formData.status) && (
+                                <div
+                                    style={{
+                                        padding: "12px",
+                                        background: "#f9f9f9",
+                                        borderRadius: "4px",
+                                        border: "1px solid #e1ddd4",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontSize: "11px",
+                                            color: "#8b949e",
+                                            marginBottom: "6px",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.5px",
+                                        }}
+                                    >
+                                        Preview
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            gap: "8px",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        {selectedType && (
+                                            <span
+                                                style={{
+                                                    fontSize: "11px",
+                                                    background: "#e1ddd4",
+                                                    color: "#5a5450",
+                                                    padding: "3px 8px",
+                                                    borderRadius: "2px",
+                                                }}
+                                            >
+                                                {selectedType}
+                                            </span>
+                                        )}
+                                        {formData.title && (
+                                            <span
+                                                style={{
+                                                    fontSize: "13px",
+                                                    fontWeight: 600,
+                                                    color: "#0f1117",
+                                                }}
+                                            >
+                                                {formData.title}
+                                            </span>
+                                        )}
+                                        {formData.status && (
+                                            <span
+                                                style={{
+                                                    fontSize: "11px",
+                                                    background:
+                                                        formData.status ===
+                                                        "Solved"
+                                                            ? "#d4edda"
+                                                            : "#fff3cd",
+                                                    color:
+                                                        formData.status ===
+                                                        "Solved"
+                                                            ? "#155724"
+                                                            : "#856404",
+                                                    padding: "3px 8px",
+                                                    borderRadius: "2px",
+                                                    marginLeft: "auto",
+                                                }}
+                                            >
+                                                {formData.status}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* MODAL FOOTER */}
+                        <div
+                            style={{
+                                padding: "16px 24px",
+                                borderTop: "1px solid #e1ddd4",
+                                display: "flex",
+                                gap: "12px",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            <button
+                                onClick={() => setShowModal(false)}
+                                disabled={submitting}
+                                style={{
+                                    padding: "8px 16px",
+                                    fontSize: "13px",
+                                    fontWeight: 600,
+                                    background: "#f9f9f9",
+                                    color: "#5a5450",
+                                    border: "1px solid #e1ddd4",
+                                    borderRadius: "4px",
+                                    cursor: submitting
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    transition: "all 0.2s",
+                                    opacity: submitting ? 0.6 : 1,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!submitting) {
+                                        e.currentTarget.style.background =
+                                            "#f0f0f0";
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!submitting) {
+                                        e.currentTarget.style.background =
+                                            "#f9f9f9";
+                                    }
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    if (!formData.title || !selectedType) {
+                                        alert(
+                                            "Please fill in title and select a type",
+                                        );
+                                        return;
+                                    }
+                                    setSubmitting(true);
+                                    try {
+                                        const token =
+                                            localStorage.getItem("token");
+                                        const response = await fetch(
+                                            "http://localhost:3001/api/problems",
+                                            {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type":
+                                                        "application/json",
+                                                    Authorization: `Bearer ${token}`,
+                                                },
+                                                body: JSON.stringify({
+                                                    title: formData.title,
+                                                    type: selectedType,
+                                                    status: formData.status.toLowerCase(),
+                                                    language: formData.language,
+                                                    difficulty: "medium",
+                                                    problem: "",
+                                                    solution: "",
+                                                    learned: "",
+                                                }),
+                                            },
+                                        );
+                                        if (!response.ok)
+                                            throw new Error("Failed to create");
+                                        const newProblem =
+                                            await response.json();
+                                        setProblems([...problems, newProblem]);
+                                        setSelectedId(newProblem.id);
+                                        setShowModal(false);
+                                    } catch (err) {
+                                        alert("Error creating entry");
+                                        console.error(err);
+                                    } finally {
+                                        setSubmitting(false);
+                                    }
+                                }}
+                                disabled={submitting}
+                                style={{
+                                    padding: "8px 16px",
+                                    fontSize: "13px",
+                                    fontWeight: 600,
+                                    background: "#c8401a",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: submitting
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    transition: "all 0.2s",
+                                    opacity: submitting ? 0.8 : 1,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!submitting) {
+                                        e.currentTarget.style.background =
+                                            "#a63015";
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!submitting) {
+                                        e.currentTarget.style.background =
+                                            "#c8401a";
+                                    }
+                                }}
+                            >
+                                {submitting ? "Creating..." : "Create Entry →"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

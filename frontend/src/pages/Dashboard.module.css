@@ -1,0 +1,71 @@
+.container {
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+.header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    color: var(--primary);
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.userInfo {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
+
+.logoutBtn {
+    background-color: var(--error);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+    background-color: var(--error);
+    opacity: 0.9;
+}
+
+.main {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+}
+
+.section h2 {
+    margin: 0 0 15px 0;
+    color: var(--primary);
+}
+
+.section p {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
