@@ -74,15 +74,14 @@ export const Login: React.FC = () => {
     const handleForgotPassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setForgotLoading(true);
+        setError("");
 
         try {
             const response = await axios.post("/api/auth/forgot-password", {
                 email: forgotEmail,
             });
-            setResetToken(response.data.resetToken);
-            setForgotSuccess(
-                "Reset token generated! Proceed to reset your password.",
-            );
+            setResetToken(response.data.token);
+            setForgotSuccess(response.data.message);
             setShowResetForm(true);
         } catch (err) {
             if (axios.isAxiosError(err)) {
@@ -111,6 +110,7 @@ export const Login: React.FC = () => {
             await axios.post("/api/auth/reset-password", {
                 token: resetToken,
                 password: newPassword,
+                confirmPassword,
             });
             setForgotSuccess("Password reset successfully! Please log in.");
             setTimeout(() => {
@@ -121,7 +121,7 @@ export const Login: React.FC = () => {
                 setNewPassword("");
                 setConfirmPassword("");
                 setForgotSuccess("");
-            }, 1500);
+            }, 2000);
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 setError(
@@ -187,7 +187,7 @@ export const Login: React.FC = () => {
                                     {error}
                                 </div>
                             )}
-                            {forgotSuccess && (
+                            {forgotSuccess && resetToken && (
                                 <div
                                     style={{
                                         marginBottom: "16px",
@@ -199,7 +199,58 @@ export const Login: React.FC = () => {
                                         fontSize: "14px",
                                     }}
                                 >
-                                    {forgotSuccess}
+                                    <div style={{ marginBottom: "8px" }}>
+                                        {forgotSuccess}
+                                    </div>
+                                    <div
+                                        style={{
+                                            padding: "8px",
+                                            backgroundColor: "#fff",
+                                            border: "1px solid #cfc",
+                                            borderRadius: "4px",
+                                            fontSize: "12px",
+                                            fontFamily: "monospace",
+                                            wordBreak: "break-all",
+                                            marginBottom: "8px",
+                                        }}
+                                    >
+                                        {resetToken}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                                resetToken,
+                                            );
+                                        }}
+                                        style={{
+                                            padding: "6px 12px",
+                                            backgroundColor: "#060",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            fontSize: "12px",
+                                            cursor: "pointer",
+                                            marginRight: "8px",
+                                        }}
+                                    >
+                                        Copy Token
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowResetForm(true)}
+                                        style={{
+                                            padding: "6px 12px",
+                                            backgroundColor: "#060",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            fontSize: "12px",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Go to Reset Page
+                                    </button>
                                 </div>
                             )}
 
@@ -271,6 +322,7 @@ export const Login: React.FC = () => {
                                     setForgotEmail("");
                                     setError("");
                                     setForgotSuccess("");
+                                    setResetToken("");
                                 }}
                                 style={{
                                     width: "100%",

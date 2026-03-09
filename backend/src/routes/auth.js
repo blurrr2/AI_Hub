@@ -136,7 +136,7 @@ router.post("/forgot-password", async (req, res) => {
 
         // Generate reset token (32 bytes = 64 hex chars)
         const resetToken = crypto.randomBytes(32).toString("hex");
-        const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
         // Save token to database
         await prisma.user.update({
@@ -147,23 +147,9 @@ router.post("/forgot-password", async (req, res) => {
             },
         });
 
-        // Send email with reset link using Resend
-        const resetLink = `https://blurrr2.github.io/AI_Hub/#/reset-password?token=${resetToken}`;
-
-        try {
-            await resend.emails.send({
-                from: "AI Hub <onboarding@resend.dev>",
-                to: email,
-                subject: "Reset your AI Hub password",
-                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Link expires in 1 hour.</p>`,
-            });
-        } catch (emailError) {
-            console.error("Failed to send email:", emailError);
-            // Still return success to not reveal email existence
-        }
-
         res.json({
-            message: "If this email exists, a reset link was sent.",
+            message: "Reset token generated! Proceed to reset your password.",
+            token: resetToken,
         });
     } catch (error) {
         console.error('Forgot password error:', error);
@@ -174,13 +160,19 @@ router.post("/forgot-password", async (req, res) => {
 // POST /reset-password
 router.post("/reset-password", async (req, res) => {
     try {
-        const { token, password } = req.body;
+        const { token, password, confirmPassword } = req.body;
 
         // Validate input
         if (!token || !password) {
             return res
                 .status(400)
                 .json({ error: "Token and password are required" });
+        }
+
+        if (password !== confirmPassword) {
+            return res
+                .status(400)
+                .json({ error: "Passwords do not match" });
         }
 
         // Find user with valid reset token
