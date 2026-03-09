@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 function App() {
     return (
         <ThemeProvider>
-            <BrowserRouter>
+            <HashRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route
@@ -62,8 +62,9 @@ function App() {
                         path="/"
                         element={<Navigate to="/dashboard" replace />}
                     />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-            </BrowserRouter>
+            </HashRouter>
         </ThemeProvider>
     );
 }

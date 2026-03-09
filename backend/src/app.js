@@ -1,16 +1,11 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import newsRoutes from "./routes/news.js";
 import resourcesRoutes from "./routes/resources.js";
 import problemsRoutes from "./routes/problems.js";
-import { initializeNewsCron, syncNewsFeeds } from "./services/newsService.js";
-
-dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(
@@ -36,14 +31,4 @@ app.get("/health", (req, res) => {
     res.json({ status: "ok" });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-
-    // Initialize news cron job (every 2 hours)
-    initializeNewsCron();
-
-    // Run initial sync on startup
-    syncNewsFeeds().catch((err) => {
-        console.error("Initial news sync failed:", err);
-    });
-});
+export default app;

@@ -1,6 +1,7 @@
 ﻿import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
+import { buildApiUrl } from "../api/config";
 
 interface Problem {
     id: string;
@@ -43,12 +44,9 @@ export default function Journal() {
         const fetchProblems = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch(
-                    "http://localhost:3001/api/problems",
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    },
-                );
+                const response = await fetch(buildApiUrl("/api/problems"), {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 if (!response.ok) throw new Error("Failed to fetch");
                 const data = await response.json();
                 setProblems(data);
@@ -1085,7 +1083,7 @@ export default function Journal() {
                                         const token =
                                             localStorage.getItem("token");
                                         const response = await fetch(
-                                            "http://localhost:3001/api/problems",
+                                            buildApiUrl("/api/problems"),
                                             {
                                                 method: "POST",
                                                 headers: {
