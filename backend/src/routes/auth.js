@@ -7,7 +7,6 @@ import { Resend } from "resend";
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /register
 router.post("/register", async (req, res) => {
@@ -115,6 +114,7 @@ router.post("/login", async (req, res) => {
 // POST /forgot-password
 router.post("/forgot-password", async (req, res) => {
     try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         const { email } = req.body;
 
         // Validate input
