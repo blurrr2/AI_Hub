@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import * as React from "react";
+import axios from "axios";
 import { Sidebar } from "../components/Sidebar";
 
 interface StatCardProps {
@@ -43,6 +44,33 @@ function useCountUp(target: number, duration: number = 1200) {
 export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // Stats state
+    const [stats, setStats] = React.useState({
+        newsRead: 0,
+        resources: 0,
+        bugsSolved: 0,
+        papers: 0,
+        streak: 0,
+    });
+
+    // Fetch dashboard stats from API
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get("/api/dashboard/stats", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setStats(response.data);
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats:", error);
+                // Keep default 0 values on error
+            }
+        };
+
+        fetchStats();
+    }, []);
 
     // Toast state
     const [toasts, setToasts] = React.useState<
@@ -92,11 +120,11 @@ export const Dashboard: React.FC = () => {
     };
 
     const statCards: StatCardProps[] = [
-        { label: "News Read", value: 24, color: "#0066cc" },
-        { label: "Resources", value: 18, color: "#10b981" },
-        { label: "Bugs Solved", value: 7, color: "#f59e0b" },
-        { label: "Papers", value: 3, color: "#8b5cf6" },
-        { label: "Streak", value: 12, color: "#c8401a" },
+        { label: "News Read", value: stats.newsRead, color: "#0066cc" },
+        { label: "Resources", value: stats.resources, color: "#10b981" },
+        { label: "Bugs Solved", value: stats.bugsSolved, color: "#f59e0b" },
+        { label: "Papers", value: stats.papers, color: "#8b5cf6" },
+        { label: "Streak", value: stats.streak, color: "#c8401a" },
     ];
 
     const activities: ActivityItem[] = [

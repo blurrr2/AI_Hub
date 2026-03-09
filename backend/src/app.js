@@ -4,16 +4,14 @@ import authRoutes from "./routes/auth.js";
 import newsRoutes from "./routes/news.js";
 import resourcesRoutes from "./routes/resources.js";
 import problemsRoutes from "./routes/problems.js";
+import dashboardRoutes from "./routes/dashboard.js";
 
 const app = express();
 
 // Middleware
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173",
-            "https://blurrr2.github.io"
-        ],
+        origin: ["http://localhost:5173", "https://blurrr2.github.io"],
         credentials: true,
     }),
 );
@@ -24,10 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/resources", resourcesRoutes);
 app.use("/api/problems", problemsRoutes);
-
-app.use("/api/dashboard", (req, res) => {
-    res.json({ message: "Dashboard routes placeholder" });
-});
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
