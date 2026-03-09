@@ -3,9 +3,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
+import { Resend } from "resend";
 
 const router = express.Router();
 const prisma = new PrismaClient();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /register
 router.post("/register", async (req, res) => {
@@ -128,13 +130,13 @@ router.post("/forgot-password", async (req, res) => {
         if (!user) {
             // Don't reveal if user exists (security best practice)
             return res.json({
-                message: "If email exists, a reset token has been sent",
+                message: "If this email exists, a reset link was sent.",
             });
         }
 
         // Generate reset token (32 bytes = 64 hex chars)
         const resetToken = crypto.randomBytes(32).toString("hex");
-        const resetTokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+        const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
         // Save token to database
         await prisma.user.update({
@@ -145,11 +147,23 @@ router.post("/forgot-password", async (req, res) => {
             },
         });
 
-        // For testing/development, return the token directly
+        // Send email with reset link using Resend
+        const resetLink = `https://blurrr2.github.io/AI_Hub/#/reset-password?token=${resetToken}`;
+
+        try {
+            await resend.emails.send({
+                from: "AI Hub <onboarding@resend.dev>",
+                to: email,
+                subject: "Reset your AI Hub password",
+                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Link expires in 1 hour.</p>`,
+            });
+        } catch (emailError) {
+            console.error("Failed to send email:", emailError);
+            // Still return success to not reveal email existence
+        }
+
         res.json({
-            message: "Reset token generated",
-            resetToken,
-            expiresIn: "1 hour",
+            message: "If this email exists, a reset link was sent.",
         });
     } catch (error) {
         console.error(error);
