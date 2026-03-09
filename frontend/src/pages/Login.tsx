@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import styles from "./Login.module.css";
 
-type AuthMode = "login" | "register" | "forgot" | "reset";
+type AuthMode = "login" | "register";
 
 interface LoginResponse {
     message: string;
@@ -15,10 +14,14 @@ interface LoginResponse {
     };
 }
 
-interface ForgotPasswordResponse {
+interface LoginResponse {
     message: string;
-    resetToken: string;
-    expiresIn: string;
+    token: string;
+    user: {
+        id: number;
+        email: string;
+        username: string;
+    };
 }
 
 export const Login: React.FC = () => {
@@ -28,10 +31,12 @@ export const Login: React.FC = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState("");
-
-    // Forgot password / reset password states
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState("");
+    const [forgotLoading, setForgotLoading] = useState(false);
     const [resetToken, setResetToken] = useState("");
+    const [forgotSuccess, setForgotSuccess] = useState("");
+    const [showResetForm, setShowResetForm] = useState(false);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -40,79 +45,296 @@ export const Login: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        setSuccess("");
         setLoading(true);
 
         try {
-            if (mode === "forgot") {
-                // Handle forgot password
-                const response = await axios.post("/api/auth/forgot-password", {
-                    email,
-                });
-                setSuccess("Reset token generated!");
-                setResetToken(response.data.resetToken);
-                setMode("reset");
-                setEmail("");
-            } else if (mode === "reset") {
-                // Handle reset password
-                if (newPassword !== confirmPassword) {
-                    setError("Passwords do not match");
-                    setLoading(false);
-                    return;
-                }
+            const endpoint =
+                mode === "login" ? "/api/auth/login" : "/api/auth/register";
+            const payload =
+                mode === "login"
+                    ? { email, password }
+                    : { email, username, password };
 
-                await axios.post("/api/auth/reset-password", {
-                    token: resetToken,
-                    password: newPassword,
-                });
-                setSuccess("Password reset successfully! Please log in.");
+            const response = await axios.post<LoginResponse>(endpoint, payload);
+
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            navigate("/dashboard");
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.error || "An error occurred");
+            } else {
+                setError("An unexpected error occurred");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setForgotLoading(true);
+
+        try {
+            const response = await axios.post("/api/auth/forgot-password", {
+                email: forgotEmail,
+            });
+            setResetToken(response.data.resetToken);
+            setForgotSuccess(
+                "Reset token generated! Proceed to reset your password.",
+            );
+            setShowResetForm(true);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(
+                    err.response?.data?.error || "Failed to send reset link",
+                );
+            } else {
+                setError("An unexpected error occurred");
+            }
+        } finally {
+            setForgotLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        setForgotLoading(true);
+        try {
+            await axios.post("/api/auth/reset-password", {
+                token: resetToken,
+                password: newPassword,
+            });
+            setForgotSuccess("Password reset successfully! Please log in.");
+            setTimeout(() => {
+                setShowForgotPassword(false);
+                setShowResetForm(false);
+                setForgotEmail("");
                 setResetToken("");
-                {mode !== "reset" && mode !== "forgot" && (
-                    <div className={styles.tabs}>
-                        <button
-                            className={`${styles.tab} ${mode === "login" ? styles.active : ""}`}
-                            onClick={() => setMode("login")}
-                        >
-                            Login
-                        </button>
-                        <button
-                            className={`${styles.tab} ${mode === "register" ? styles.active : ""}`}
-                            onClick={() => setMode("register")}
-                        >
-                            Register
-                        </button>
-                    </div>
-                )}
+                setNewPassword("");
+                setConfirmPassword("");
+                setForgotSuccess("");
+            }, 1500);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(
+                    err.response?.data?.error || "Failed to reset password",
+                );
+            } else {
+                setError("An unexpected error occurred");
+            }
+        } finally {
+            setForgotLoading(false);
+        }
+    };
 
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    {error && <div className={styles.error}>{error}</div>}
-                    {success && (
-                        <div
-                            className={styles.error}
-                            style={{ color: "green", borderColor: "green" }}
-                        >
-                            {success}
-                        </div>
-                    )}
+    // Forgot Password Modal
+    if (showForgotPassword) {
+        return (
+            <div
+                style={{
+                    minHeight: "100vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "var(--bg)",
+                    padding: "20px",
+                }}
+            >
+                <div
+                    style={{
+                        backgroundColor: "white",
+                        borderRadius: "14px",
+                        padding: "32px",
+                        maxWidth: "400px",
+                        width: "100%",
+                        border: "1px solid #e5ddd2",
+                    }}
+                >
+                    <h2
+                        style={{
+                            margin: "0 0 24px 0",
+                            fontSize: "24px",
+                            fontWeight: 700,
+                            color: "#1a1612",
+                            fontFamily: "Inter, sans-serif",
+                        }}
+                    >
+                        Reset Password
+                    </h2>
 
-                    {mode === "reset" ? (
-                        <>
-                            <div className={styles.formGroup}>
-                                <label>Reset Token (auto-filled)</label>
+                    {!showResetForm ? (
+                        <form onSubmit={handleForgotPassword}>
+                            {error && (
+                                <div
+                                    style={{
+                                        marginBottom: "16px",
+                                        padding: "12px",
+                                        backgroundColor: "#fee",
+                                        border: "1px solid #fcc",
+                                        borderRadius: "6px",
+                                        color: "#c00",
+                                        fontSize: "14px",
+                                    }}
+                                >
+                                    {error}
+                                </div>
+                            )}
+                            {forgotSuccess && (
+                                <div
+                                    style={{
+                                        marginBottom: "16px",
+                                        padding: "12px",
+                                        backgroundColor: "#efe",
+                                        border: "1px solid #cfc",
+                                        borderRadius: "6px",
+                                        color: "#060",
+                                        fontSize: "14px",
+                                    }}
+                                >
+                                    {forgotSuccess}
+                                </div>
+                            )}
+
+                            <div style={{ marginBottom: "16px" }}>
+                                <label
+                                    htmlFor="forgot-email"
+                                    style={{
+                                        display: "block",
+                                        marginBottom: "8px",
+                                        fontSize: "14px",
+                                        fontWeight: 500,
+                                        color: "#1a1612",
+                                        fontFamily: "Inter, sans-serif",
+                                    }}
+                                >
+                                    Email
+                                </label>
                                 <input
-                                    type="text"
-                                    value={resetToken}
-                                    disabled
-                                    style={{ opacity: 0.6 }}
+                                    id="forgot-email"
+                                    type="email"
+                                    value={forgotEmail}
+                                    onChange={(e) =>
+                                        setForgotEmail(e.target.value)
+                                    }
+                                    placeholder="Enter your email"
+                                    required
+                                    disabled={forgotLoading}
+                                    style={{
+                                        width: "100%",
+                                        padding: "10px 12px",
+                                        border: "1px solid #e5ddd2",
+                                        borderRadius: "6px",
+                                        fontSize: "14px",
+                                        fontFamily: "Inter, sans-serif",
+                                        boxSizing: "border-box",
+                                    }}
                                 />
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="new-password">
+                            <button
+                                type="submit"
+                                disabled={forgotLoading}
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 16px",
+                                    backgroundColor: "#c8401a",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    cursor: forgotLoading
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    opacity: forgotLoading ? 0.6 : 1,
+                                    fontFamily: "Inter, sans-serif",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                {forgotLoading
+                                    ? "Sending..."
+                                    : "Send Reset Link"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowForgotPassword(false);
+                                    setForgotEmail("");
+                                    setError("");
+                                    setForgotSuccess("");
+                                }}
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 16px",
+                                    backgroundColor: "transparent",
+                                    color: "#1a1612",
+                                    border: "1px solid #e5ddd2",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontWeight: 500,
+                                    cursor: "pointer",
+                                    fontFamily: "Inter, sans-serif",
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleResetPassword}>
+                            {error && (
+                                <div
+                                    style={{
+                                        marginBottom: "16px",
+                                        padding: "12px",
+                                        backgroundColor: "#fee",
+                                        border: "1px solid #fcc",
+                                        borderRadius: "6px",
+                                        color: "#c00",
+                                        fontSize: "14px",
+                                    }}
+                                >
+                                    {error}
+                                </div>
+                            )}
+                            {forgotSuccess && (
+                                <div
+                                    style={{
+                                        marginBottom: "16px",
+                                        padding: "12px",
+                                        backgroundColor: "#efe",
+                                        border: "1px solid #cfc",
+                                        borderRadius: "6px",
+                                        color: "#060",
+                                        fontSize: "14px",
+                                    }}
+                                >
+                                    {forgotSuccess}
+                                </div>
+                            )}
+
+                            <div style={{ marginBottom: "16px" }}>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        marginBottom: "8px",
+                                        fontSize: "14px",
+                                        fontWeight: 500,
+                                        color: "#1a1612",
+                                        fontFamily: "Inter, sans-serif",
+                                    }}
+                                >
                                     New Password
                                 </label>
                                 <input
-                                    id="new-password"
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) =>
@@ -120,16 +342,33 @@ export const Login: React.FC = () => {
                                     }
                                     placeholder="Enter new password"
                                     required
-                                    disabled={loading}
+                                    disabled={forgotLoading}
+                                    style={{
+                                        width: "100%",
+                                        padding: "10px 12px",
+                                        border: "1px solid #e5ddd2",
+                                        borderRadius: "6px",
+                                        fontSize: "14px",
+                                        fontFamily: "Inter, sans-serif",
+                                        boxSizing: "border-box",
+                                    }}
                                 />
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="confirm-password">
+                            <div style={{ marginBottom: "16px" }}>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        marginBottom: "8px",
+                                        fontSize: "14px",
+                                        fontWeight: 500,
+                                        color: "#1a1612",
+                                        fontFamily: "Inter, sans-serif",
+                                    }}
+                                >
                                     Confirm Password
                                 </label>
                                 <input
-                                    id="confirm-password"
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) =>
@@ -137,161 +376,228 @@ export const Login: React.FC = () => {
                                     }
                                     placeholder="Confirm new password"
                                     required
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={styles.submitBtn}
-                            >
-                                {loading ? "Resetting..." : "Reset Password"}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setMode("login")}
-                                style={{
-                                    marginTop: "8px",
-                                    padding: "8px 16px",
-                                    background: "transparent",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: "4px",
-                                    cursor: "pointer",
-                                    width: "100%",
-                                }}
-                            >
-                                Back to Login
-                            </button>
-                        </>
-                    ) : mode === "forgot" ? (
-                        <>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="forgot-email">Email</label>
-                                <input
-                                    id="forgot-email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
-                                    required
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={styles.submitBtn}
-                            >
-                                {loading ? "Sending..." : "Get Reset Token"}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setMode("login")}
-                                style={{
-                                    marginTop: "8px",
-                                    padding: "8px 16px",
-                                    background: "transparent",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: "4px",
-                                    cursor: "pointer",
-                                    width: "100%",
-                                }}
-                            >
-                                Back to Login
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="email">Email</label>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
-                                    required
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            {mode === "register" && (
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="username">Username</label>
-                                    <input
-                                        id="username"
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) =>
-                                            setUsername(e.target.value)
-                                        }
-                                        placeholder="Choose a username"
-                                        required
-                                        disabled={loading}
-                                    />
-                                </div>
-                            )}
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="password">Password</label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
-                                    placeholder="Enter your password"
-                                    required
-                                    disabled={loading}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={styles.submitBtn}
-                            >
-                                {loading
-                                    ? "Loading..."
-                                    : mode === "login"
-                                      ? "Login"
-                                      : "Register"}
-                            </button>
-
-                            {mode === "login" && (
-                                <button
-                                    type="button"
-                                    onClick={() => setMode("forgot")}
+                                    disabled={forgotLoading}
                                     style={{
-                                        marginTop: "8px",
-                                        padding: "8px 16px",
-                                        background: "transparent",
-                                        border: "none",
-                                        color: "var(--accent)",
-                                        cursor: "pointer",
                                         width: "100%",
+                                        padding: "10px 12px",
+                                        border: "1px solid #e5ddd2",
+                                        borderRadius: "6px",
                                         fontSize: "14px",
+                                        fontFamily: "Inter, sans-serif",
+                                        boxSizing: "border-box",
                                     }}
-                                >
-                                    Forgot Password?
-                                </button>
-                            )}
-                        </>
-                    )}nChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={forgotLoading}
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 16px",
+                                    backgroundColor: "#c8401a",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    cursor: forgotLoading
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    opacity: forgotLoading ? 0.6 : 1,
+                                    fontFamily: "Inter, sans-serif",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                {forgotLoading
+                                    ? "Resetting..."
+                                    : "Reset Password"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowResetForm(false);
+                                    setForgotEmail("");
+                                    setResetToken("");
+                                    setNewPassword("");
+                                    setConfirmPassword("");
+                                    setError("");
+                                    setForgotSuccess("");
+                                }}
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 16px",
+                                    backgroundColor: "transparent",
+                                    color: "#1a1612",
+                                    border: "1px solid #e5ddd2",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontWeight: 500,
+                                    cursor: "pointer",
+                                    fontFamily: "Inter, sans-serif",
+                                }}
+                            >
+                                Back
+                            </button>
+                        </form>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "var(--bg)",
+                padding: "20px",
+            }}
+        >
+            <div
+                style={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5ddd2",
+                    borderRadius: "14px",
+                    padding: "32px",
+                    width: "100%",
+                    maxWidth: "400px",
+                }}
+            >
+                <h1
+                    style={{
+                        textAlign: "center",
+                        margin: "0 0 32px 0",
+                        fontSize: "32px",
+                        fontWeight: 800,
+                        color: "#1a1612",
+                        fontFamily: "Inter, sans-serif",
+                        letterSpacing: "-0.5px",
+                    }}
+                >
+                    AI·HUB
+                </h1>
+
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "8px",
+                        marginBottom: "32px",
+                        backgroundColor: "#f7f5f0",
+                        borderRadius: "8px",
+                        padding: "4px",
+                    }}
+                >
+                    <button
+                        onClick={() => setMode("login")}
+                        style={{
+                            flex: 1,
+                            padding: "10px 12px",
+                            border: "none",
+                            backgroundColor:
+                                mode === "login" ? "white" : "transparent",
+                            color: "#1a1612",
+                            cursor: "pointer",
+                            borderRadius: "6px",
+                            transition: "all 0.2s ease",
+                            fontWeight: 500,
+                            fontSize: "14px",
+                            fontFamily: "Inter, sans-serif",
+                        }}
+                    >
+                        Login
+                    </button>
+                    <button
+                        onClick={() => setMode("register")}
+                        style={{
+                            flex: 1,
+                            padding: "10px 12px",
+                            border: "none",
+                            backgroundColor:
+                                mode === "register" ? "white" : "transparent",
+                            color: "#1a1612",
+                            cursor: "pointer",
+                            borderRadius: "6px",
+                            transition: "all 0.2s ease",
+                            fontWeight: 500,
+                            fontSize: "14px",
+                            fontFamily: "Inter, sans-serif",
+                        }}
+                    >
+                        Register
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    {error && (
+                        <div
+                            style={{
+                                marginBottom: "16px",
+                                padding: "12px",
+                                backgroundColor: "#fee",
+                                border: "1px solid #fcc",
+                                borderRadius: "6px",
+                                color: "#c00",
+                                fontSize: "14px",
+                            }}
+                        >
+                            {error}
+                        </div>
+                    )}
+
+                    <div style={{ marginBottom: "16px" }}>
+                        <label
+                            htmlFor="email"
+                            style={{
+                                display: "block",
+                                marginBottom: "8px",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                                color: "#1a1612",
+                                fontFamily: "Inter, sans-serif",
+                            }}
+                        >
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
                             required
                             disabled={loading}
+                            style={{
+                                width: "100%",
+                                padding: "10px 12px",
+                                border: "1px solid #e5ddd2",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                                fontFamily: "Inter, sans-serif",
+                                boxSizing: "border-box",
+                            }}
                         />
                     </div>
 
                     {mode === "register" && (
-                        <div className={styles.formGroup}>
-                            <label htmlFor="username">Username</label>
+                        <div style={{ marginBottom: "16px" }}>
+                            <label
+                                htmlFor="username"
+                                style={{
+                                    display: "block",
+                                    marginBottom: "8px",
+                                    fontSize: "14px",
+                                    fontWeight: 500,
+                                    color: "#1a1612",
+                                    fontFamily: "Inter, sans-serif",
+                                }}
+                            >
+                                Username
+                            </label>
                             <input
                                 id="username"
                                 type="text"
@@ -300,12 +606,33 @@ export const Login: React.FC = () => {
                                 placeholder="Choose a username"
                                 required
                                 disabled={loading}
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 12px",
+                                    border: "1px solid #e5ddd2",
+                                    borderRadius: "6px",
+                                    fontSize: "14px",
+                                    fontFamily: "Inter, sans-serif",
+                                    boxSizing: "border-box",
+                                }}
                             />
                         </div>
                     )}
 
-                    <div className={styles.formGroup}>
-                        <label htmlFor="password">Password</label>
+                    <div style={{ marginBottom: "8px" }}>
+                        <label
+                            htmlFor="password"
+                            style={{
+                                display: "block",
+                                marginBottom: "8px",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                                color: "#1a1612",
+                                fontFamily: "Inter, sans-serif",
+                            }}
+                        >
+                            Password
+                        </label>
                         <input
                             id="password"
                             type="password"
@@ -314,13 +641,52 @@ export const Login: React.FC = () => {
                             placeholder="Enter your password"
                             required
                             disabled={loading}
+                            style={{
+                                width: "100%",
+                                padding: "10px 12px",
+                                border: "1px solid #e5ddd2",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                                fontFamily: "Inter, sans-serif",
+                                boxSizing: "border-box",
+                            }}
                         />
                     </div>
+
+                    {mode === "login" && (
+                        <div
+                            style={{ textAlign: "right", marginBottom: "16px" }}
+                        >
+                            <span
+                                onClick={() => setShowForgotPassword(true)}
+                                style={{
+                                    fontSize: "12px",
+                                    color: "#c8401a",
+                                    cursor: "pointer",
+                                    fontFamily: "Inter, sans-serif",
+                                }}
+                            >
+                                Forgot Password?
+                            </span>
+                        </div>
+                    )}
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className={styles.submitBtn}
+                        style={{
+                            width: "100%",
+                            padding: "10px 16px",
+                            backgroundColor: "#c8401a",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            cursor: loading ? "not-allowed" : "pointer",
+                            opacity: loading ? 0.6 : 1,
+                            fontFamily: "Inter, sans-serif",
+                        }}
                     >
                         {loading
                             ? "Loading..."
