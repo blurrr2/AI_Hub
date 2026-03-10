@@ -114,6 +114,7 @@ router.post("/login", async (req, res) => {
 // POST /forgot-password
 router.post("/forgot-password", async (req, res) => {
     try {
+        console.log('API Key exists:', !!process.env.RESEND_API_KEY);
         const resend = new Resend(process.env.RESEND_API_KEY);
         const { email } = req.body;
 
@@ -146,6 +147,22 @@ router.post("/forgot-password", async (req, res) => {
                 resetTokenExpiry,
             },
         });
+
+        // Send email with reset link
+        const resetLink = `https://blurrr2.github.io/AI_Hub/#/reset-password?token=${resetToken}`;
+
+        console.log('Sending email to:', email);
+        try {
+            const result = await resend.emails.send({
+                from: "AI Hub <onboarding@resend.dev>",
+                to: email,
+                subject: "Reset your AI Hub password",
+                html: `<p>Click <a href="${resetLink}">here</a> to reset your password. Link expires in 15 minutes.</p>`,
+            });
+            console.log('Resend result:', result);
+        } catch (emailError) {
+            console.error('Failed to send email:', emailError);
+        }
 
         res.json({
             message: "Reset token generated! Proceed to reset your password.",
