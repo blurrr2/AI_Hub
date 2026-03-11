@@ -71,10 +71,20 @@ export const NewsFeed: React.FC = () => {
     // Refreshing state
     const [refreshing, setRefreshing] = useState(false);
 
-    const handleRefresh = () => {
+    const handleRefresh = async () => {
         setRefreshing(true);
-        fetchArticles(1);
-        setTimeout(() => setRefreshing(false), 2000);
+        try {
+            // Trigger news sync
+            await axios.post("/api/news/sync");
+            // Reload articles
+            await fetchArticles(1);
+            showToast("News synced successfully!");
+        } catch (err) {
+            console.error("Sync failed:", err);
+            showToast("Failed to sync news", "error");
+        } finally {
+            setTimeout(() => setRefreshing(false), 1000);
+        }
     };
 
     // Toast helper
