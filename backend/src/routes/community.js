@@ -37,7 +37,7 @@ router.patch("/:id/visibility", authenticateToken, async (req, res) => {
 });
 
 // GET /api/community - Get all public entries
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const problems = await prismaClient.codingProblem.findMany({
             where: { isPublic: true },

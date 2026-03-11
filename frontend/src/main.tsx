@@ -7,6 +7,14 @@ import { API_BASE_URL } from "./api/config";
 
 axios.defaults.baseURL = API_BASE_URL;
 
+axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <App />
