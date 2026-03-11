@@ -11,7 +11,7 @@ const prismaClient = new prisma.PrismaClient();
  */
 router.get("/", authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const { type, status, lang, search } = req.query;
 
         const where = {
@@ -46,7 +46,7 @@ router.get("/", authenticateToken, async (req, res) => {
  */
 router.post("/", authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const { type, title, lang, tag, status, problem, solution, learned } =
             req.body;
 
@@ -105,7 +105,7 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.put("/:id", authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const problemId = parseInt(req.params.id);
         const { type, title, lang, tag, status, problem, solution, learned } =
             req.body;
@@ -174,7 +174,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
  */
 router.delete("/:id", authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const problemId = parseInt(req.params.id);
 
         // Check ownership

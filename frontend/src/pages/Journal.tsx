@@ -39,6 +39,16 @@ export default function Journal() {
         learned: "",
     });
     const [submitting, setSubmitting] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editData, setEditData] = useState({
+        title: "",
+        type: "",
+        status: "",
+        lang: "",
+        problem: "",
+        solution: "",
+        learned: "",
+    });
 
     useEffect(() => {
         const fetchProblems = async () => {
@@ -64,6 +74,54 @@ export default function Journal() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Delete this entry?")) return;
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(buildApiUrl(`/api/problems/${id}`), {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error("Failed to delete");
+            setProblems(problems.filter((p) => p.id !== id));
+            setSelectedId(null);
+        } catch {
+            alert("Error deleting entry");
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!selectedId) return;
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(
+                buildApiUrl(`/api/problems/${selectedId}`),
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        title: editData.title,
+                        type: editData.type,
+                        status: editData.status,
+                        lang: editData.lang,
+                        problem: editData.problem,
+                        solution: editData.solution,
+                        learned: editData.learned,
+                    }),
+                },
+            );
+            if (!response.ok) throw new Error("Failed to update");
+            const updated = await response.json();
+            setProblems(problems.map((p) => (p.id === selectedId ? updated : p)));
+            setEditMode(false);
+        } catch {
+            alert("Error updating entry");
+        }
     };
 
     const selected = problems.find((p) => p.id === selectedId);
@@ -275,7 +333,9 @@ export default function Journal() {
                                     textAlign: "center",
                                 }}
                             >
-                                No entries
+                                {problems.length === 0
+                                    ? "No journal entries yet. Click + New Entry to start!"
+                                    : "No entries"}
                             </div>
                         ) : (
                             filtered.map((problem) => (
@@ -417,36 +477,40 @@ export default function Journal() {
                                         marginBottom: "20px",
                                         paddingBottom: "16px",
                                         borderBottom: "1px solid #e1ddd4",
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "flex-start",
                                     }}
                                 >
-                                    <h2
-                                        style={{
-                                            margin: "0 0 8px 0",
-                                            fontSize: 20,
-                                            fontWeight: 700,
-                                            fontFamily: "Inter, sans-serif",
-                                            color: "#0f1117",
-                                        }}
-                                    >
-                                        {selected.title}
-                                    </h2>
-                                    <div
-                                        style={{ display: "flex", gap: "12px" }}
-                                    >
-                                        <span
+                                    <div style={{ flex: 1 }}>
+                                        <h2
                                             style={{
-                                                fontSize: "12px",
-                                                background: "var(--surface2)",
-                                                color: "var(--ink2)",
-                                                padding: "4px 10px",
-                                                borderRadius: "3px",
+                                                margin: "0 0 8px 0",
+                                                fontSize: 20,
+                                                fontWeight: 700,
+                                                fontFamily: "Inter, sans-serif",
+                                                color: "#0f1117",
                                             }}
                                         >
-                                            Type: {selected.type}
-                                        </span>
-                                        <span
-                                            style={{
-                                                fontSize: "12px",
+                                            {selected.title}
+                                        </h2>
+                                        <div
+                                            style={{ display: "flex", gap: "12px" }}
+                                        >
+                                            <span
+                                                style={{
+                                                    fontSize: "12px",
+                                                    background: "var(--surface2)",
+                                                    color: "var(--ink2)",
+                                                    padding: "4px 10px",
+                                                    borderRadius: "3px",
+                                                }}
+                                            >
+                                                Type: {selected.type}
+                                            </span>
+                                            <span
+                                                style={{
+                                                    fontSize: "12px",
                                                 background: "var(--surface2)",
                                                 color: "var(--ink2)",
                                                 padding: "4px 10px",
@@ -469,6 +533,47 @@ export default function Journal() {
                                                 Lang: {selected.language}
                                             </span>
                                         )}
+                                    </div>
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                        <button
+                                            onClick={() => {
+                                                setEditMode(true);
+                                                setEditData({
+                                                    title: selected.title,
+                                                    type: selected.type,
+                                                    status: selected.status,
+                                                    lang: selected.language || "",
+                                                    problem: selected.problem || "",
+                                                    solution: selected.solution || "",
+                                                    learned: selected.learned || "",
+                                                });
+                                            }}
+                                            style={{
+                                                padding: "6px 12px",
+                                                fontSize: "12px",
+                                                background: "#c8401a",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "4px",
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(selected.id)}
+                                            style={{
+                                                padding: "6px 12px",
+                                                fontSize: "12px",
+                                                background: "#da3633",
+                                                color: "white",
+                                                border: "none",
+                                                borderRadius: "4px",
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1094,12 +1199,11 @@ export default function Journal() {
                                                 body: JSON.stringify({
                                                     title: formData.title,
                                                     type: selectedType,
-                                                    status: formData.status.toLowerCase(),
-                                                    language: formData.language,
-                                                    difficulty: "medium",
-                                                    problem: "",
-                                                    solution: "",
-                                                    learned: "",
+                                                    status: formData.status,
+                                                    lang: formData.language,
+                                                    problem: formData.problem,
+                                                    solution: formData.solution,
+                                                    learned: formData.learned,
                                                 }),
                                             },
                                         );
@@ -1147,6 +1251,93 @@ export default function Journal() {
                             >
                                 {submitting ? "Creating..." : "Create Entry →"}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* EDIT MODAL */}
+            {editMode && selected && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                    }}
+                    onClick={() => setEditMode(false)}
+                >
+                    <div
+                        style={{
+                            background: "var(--surface)",
+                            borderRadius: "8px",
+                            padding: "24px",
+                            width: "90%",
+                            maxWidth: "600px",
+                            maxHeight: "90vh",
+                            overflowY: "auto",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 style={{ margin: "0 0 16px 0" }}>Edit Entry</h3>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <input
+                                value={editData.title}
+                                onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                                placeholder="Title"
+                                style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" }}
+                            />
+                            <textarea
+                                value={editData.problem}
+                                onChange={(e) => setEditData({ ...editData, problem: e.target.value })}
+                                placeholder="Problem"
+                                rows={4}
+                                style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" }}
+                            />
+                            <textarea
+                                value={editData.solution}
+                                onChange={(e) => setEditData({ ...editData, solution: e.target.value })}
+                                placeholder="Solution"
+                                rows={4}
+                                style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" }}
+                            />
+                            <textarea
+                                value={editData.learned}
+                                onChange={(e) => setEditData({ ...editData, learned: e.target.value })}
+                                placeholder="What I learned"
+                                rows={3}
+                                style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" }}
+                            />
+                            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "8px" }}>
+                                <button
+                                    onClick={() => setEditMode(false)}
+                                    style={{
+                                        padding: "8px 16px",
+                                        background: "var(--surface2)",
+                                        border: "1px solid var(--border)",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUpdate}
+                                    style={{
+                                        padding: "8px 16px",
+                                        background: "#c8401a",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
