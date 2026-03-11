@@ -4,7 +4,9 @@
       "Bash(git add .)",
       "Bash(git push origin master)",
       "Bash(git commit -m \"fix: better error logging for forgot password\")",
-      "Bash(git commit -m \"feat: real news feed from database\")"
+      "Bash(git commit -m \"feat: real news feed from database\")",
+      "Bash(npm run deploy)",
+      "Bash(git commit -m \"fix: bookmark feature - use req.user.userId instead of req.user.id\")"
     ]
   }
 }

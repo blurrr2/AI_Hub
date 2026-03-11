@@ -208,7 +208,10 @@ export const NewsFeed: React.FC = () => {
                 return newSet;
             });
         } catch (err) {
-            console.error("Error toggling bookmark:", err);
+            console.error("Bookmark error:", err);
+            if (axios.isAxiosError(err)) {
+                console.error("Bookmark error response:", err.response?.data);
+            }
             showToast("Failed to update bookmark", "error");
         }
     };

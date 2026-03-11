@@ -88,7 +88,9 @@ router.post("/sync", async (req, res) => {
 router.post("/:id/bookmark", authenticateToken, async (req, res) => {
     try {
         const articleId = parseInt(req.params.id);
-        const userId = req.user.id;
+        const userId = req.user.userId;
+
+        console.log('Bookmark request:', { articleId, userId });
 
         // Check if article exists
         const article = await prisma.newsArticle.findUnique({
@@ -142,7 +144,7 @@ router.post("/:id/bookmark", authenticateToken, async (req, res) => {
  */
 router.get("/bookmarks", authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const { page = 1, limit = 20 } = req.query;
 
         const pageNum = Math.max(1, parseInt(page) || 1);
