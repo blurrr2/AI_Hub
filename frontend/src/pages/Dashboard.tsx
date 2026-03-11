@@ -158,37 +158,6 @@ export const Dashboard: React.FC = () => {
         { label: "Streak", value: stats.streak, color: "#c8401a" },
     ];
 
-    const activities: ActivityItem[] = [
-        {
-            id: "1",
-            title: "Solved LeetCode #206",
-            description: "Reverse Linked List - Medium",
-            icon: "✅",
-            time: "2h ago",
-        },
-        {
-            id: "2",
-            title: "Added Learning Resource",
-            description: "Transformer Paper",
-            icon: "📚",
-            time: "5h ago",
-        },
-        {
-            id: "3",
-            title: "Read News Article",
-            description: "GPT-5 Analysis",
-            icon: "📰",
-            time: "1d ago",
-        },
-        {
-            id: "4",
-            title: "Completed Task",
-            description: "React 18 Patterns",
-            icon: "🎓",
-            time: "3d ago",
-        },
-    ];
-
     const quickActions: ActionItem[] = [
         { icon: "➕", label: "Add Resource", color: "#0066cc" },
         { icon: "🎯", label: "Solve Problem", color: "#c8401a" },
