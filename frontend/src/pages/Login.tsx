@@ -513,18 +513,18 @@ export const Login: React.FC = () => {
             <div
                 style={{
                     backgroundColor: "white",
-                    border: "1px solid #e5ddd2",
-                    borderRadius: "14px",
-                    padding: "32px",
+                    borderRadius: "16px",
+                    padding: "40px",
                     width: "100%",
-                    maxWidth: "400px",
+                    maxWidth: "420px",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03)",
                 }}
             >
                 <h1
                     style={{
                         textAlign: "center",
-                        margin: "0 0 32px 0",
-                        fontSize: "32px",
+                        margin: "0 0 8px 0",
+                        fontSize: "28px",
                         fontWeight: 800,
                         color: "#1a1612",
                         fontFamily: "Inter, sans-serif",
@@ -534,13 +534,25 @@ export const Login: React.FC = () => {
                     AI·HUB
                 </h1>
 
+                <p
+                    style={{
+                        textAlign: "center",
+                        margin: "0 0 32px 0",
+                        fontSize: "13px",
+                        color: "#999",
+                        fontFamily: "Inter, sans-serif",
+                    }}
+                >
+                    Your AI Learning Dashboard
+                </p>
+
                 <div
                     style={{
                         display: "flex",
                         gap: "8px",
                         marginBottom: "32px",
-                        backgroundColor: "#f7f5f0",
-                        borderRadius: "8px",
+                        backgroundColor: "var(--bg)",
+                        borderRadius: "12px",
                         padding: "4px",
                     }}
                 >
@@ -551,12 +563,12 @@ export const Login: React.FC = () => {
                             padding: "10px 12px",
                             border: "none",
                             backgroundColor:
-                                mode === "login" ? "white" : "transparent",
-                            color: "#1a1612",
+                                mode === "login" ? "#c8401a" : "transparent",
+                            color: mode === "login" ? "white" : "#666",
                             cursor: "pointer",
-                            borderRadius: "6px",
+                            borderRadius: "8px",
                             transition: "all 0.2s ease",
-                            fontWeight: 500,
+                            fontWeight: 600,
                             fontSize: "14px",
                             fontFamily: "Inter, sans-serif",
                         }}
@@ -570,12 +582,12 @@ export const Login: React.FC = () => {
                             padding: "10px 12px",
                             border: "none",
                             backgroundColor:
-                                mode === "register" ? "white" : "transparent",
-                            color: "#1a1612",
+                                mode === "register" ? "#c8401a" : "transparent",
+                            color: mode === "register" ? "white" : "#666",
                             cursor: "pointer",
-                            borderRadius: "6px",
+                            borderRadius: "8px",
                             transition: "all 0.2s ease",
-                            fontWeight: 500,
+                            fontWeight: 600,
                             fontSize: "14px",
                             fontFamily: "Inter, sans-serif",
                         }}
@@ -625,9 +637,9 @@ export const Login: React.FC = () => {
                             disabled={loading}
                             style={{
                                 width: "100%",
-                                padding: "10px 12px",
-                                border: "1px solid #e5ddd2",
-                                borderRadius: "6px",
+                                padding: "12px",
+                                border: "1px solid var(--border)",
+                                borderRadius: "8px",
                                 fontSize: "14px",
                                 fontFamily: "Inter, sans-serif",
                                 boxSizing: "border-box",
@@ -660,9 +672,9 @@ export const Login: React.FC = () => {
                                 disabled={loading}
                                 style={{
                                     width: "100%",
-                                    padding: "10px 12px",
-                                    border: "1px solid #e5ddd2",
-                                    borderRadius: "6px",
+                                    padding: "12px",
+                                    border: "1px solid var(--border)",
+                                    borderRadius: "8px",
                                     fontSize: "14px",
                                     fontFamily: "Inter, sans-serif",
                                     boxSizing: "border-box",
@@ -695,9 +707,9 @@ export const Login: React.FC = () => {
                             disabled={loading}
                             style={{
                                 width: "100%",
-                                padding: "10px 12px",
-                                border: "1px solid #e5ddd2",
-                                borderRadius: "6px",
+                                padding: "12px",
+                                border: "1px solid var(--border)",
+                                borderRadius: "8px",
                                 fontSize: "14px",
                                 fontFamily: "Inter, sans-serif",
                                 boxSizing: "border-box",
@@ -728,16 +740,23 @@ export const Login: React.FC = () => {
                         disabled={loading}
                         style={{
                             width: "100%",
-                            padding: "10px 16px",
+                            padding: "12px 16px",
                             backgroundColor: "#c8401a",
                             color: "white",
                             border: "none",
-                            borderRadius: "6px",
+                            borderRadius: "8px",
                             fontSize: "14px",
                             fontWeight: 600,
                             cursor: loading ? "not-allowed" : "pointer",
                             opacity: loading ? 0.6 : 1,
                             fontFamily: "Inter, sans-serif",
+                            transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!loading) e.currentTarget.style.backgroundColor = "#a83315";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#c8401a";
                         }}
                     >
                         {loading
