@@ -535,7 +535,7 @@ export default function Journal() {
                                         )}
                                     </div>
                                 </div>
-                                    <div style={{ display: "flex", gap: "8px" }}>
+                                <div style={{ display: "flex", gap: "8px" }}>
                                         <button
                                             onClick={() => {
                                                 setEditMode(true);
