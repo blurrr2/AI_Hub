@@ -28,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user = {}, onLogout }) => {
         { label: "News Feed", path: "/news" },
         { label: "Learning Library", path: "/library" },
         { label: "Coding Journal", path: "/journal" },
+        { label: "Community", path: "/community" },
     ];
 
     return (

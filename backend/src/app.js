@@ -5,6 +5,7 @@ import newsRoutes from "./routes/news.js";
 import resourcesRoutes from "./routes/resources.js";
 import problemsRoutes from "./routes/problems.js";
 import dashboardRoutes from "./routes/dashboard.js";
+import communityRoutes from "./routes/community.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/resources", resourcesRoutes);
 app.use("/api/problems", problemsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/community", communityRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

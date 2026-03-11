@@ -7,6 +7,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { NewsFeed } from "./pages/NewsFeed";
 import Library from "./pages/Library";
 import Journal from "./pages/Journal";
+import Community from "./pages/Community";
 import "./App.css";
 
 // Protected Route Component
@@ -59,6 +60,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Journal />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/community"
+                        element={
+                            <ProtectedRoute>
+                                <Community />
                             </ProtectedRoute>
                         }
                     />

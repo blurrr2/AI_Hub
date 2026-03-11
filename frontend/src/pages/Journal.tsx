@@ -14,7 +14,12 @@ interface Problem {
     solution?: string;
     learned?: string;
     description?: string;
+    isPublic?: boolean;
     createdAt: string;
+    _count?: {
+        likes: number;
+        comments: number;
+    };
 }
 
 export default function Journal() {
@@ -540,7 +545,42 @@ export default function Journal() {
                                         )}
                                     </div>
                                 </div>
-                                <div style={{ display: "flex", gap: "8px" }}>
+                                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const token = localStorage.getItem("token");
+                                                    await fetch(buildApiUrl(`/api/problems/${selected.id}/visibility`), {
+                                                        method: "PATCH",
+                                                        headers: {
+                                                            Authorization: `Bearer ${token}`,
+                                                            "Content-Type": "application/json",
+                                                        },
+                                                        body: JSON.stringify({ isPublic: !selected.isPublic }),
+                                                    });
+                                                    setProblems(problems.map(p => p.id === selected.id ? { ...p, isPublic: !p.isPublic } : p));
+                                                } catch {
+                                                    alert("Failed to toggle visibility");
+                                                }
+                                            }}
+                                            style={{
+                                                padding: "6px 12px",
+                                                fontSize: "12px",
+                                                background: "var(--surface2)",
+                                                color: "var(--ink)",
+                                                border: "1px solid var(--border)",
+                                                borderRadius: "4px",
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            {selected.isPublic ? "🌐 Public" : "🔒 Private"}
+                                        </button>
+                                        {selected.isPublic && selected._count && (
+                                            <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "var(--ink2)" }}>
+                                                <span>❤️ {selected._count.likes}</span>
+                                                <span>💬 {selected._count.comments}</span>
+                                            </div>
+                                        )}
                                         <button
                                             onClick={() => {
                                                 setEditMode(true);

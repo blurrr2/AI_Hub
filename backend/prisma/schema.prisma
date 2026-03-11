@@ -18,13 +18,15 @@ model User {
   resetToken String?
   resetTokenExpiry DateTime?
   createdAt DateTime @default(now())
-  
+
   // Relations
   resources CodingResource[]
   problems  CodingProblem[]
   activities UserActivity[]
   bookmarkedArticles BookmarkedArticle[]
-  
+  likes     Like[]
+  comments  Comment[]
+
   @@map("users")
 }
 
@@ -90,10 +92,13 @@ model CodingProblem {
   solution    String?
   learned     String?
   description String?
+  isPublic    Boolean @default(false)
   createdAt   DateTime @default(now())
 
   // Relations
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes       Like[]
+  comments    Comment[]
 
   @@map("coding_problems")
 }
@@ -104,10 +109,38 @@ model UserActivity {
   date      DateTime
   type      String
   count     Int @default(1)
-  
+
   // Relations
   user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@unique([userId, date, type])
   @@map("user_activities")
+}
+
+model Like {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  problemId Int
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@map("likes")
+}
+
+model Comment {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  problemId Int
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }
