@@ -534,6 +534,7 @@ export default function Journal() {
                                             </span>
                                         )}
                                     </div>
+                                </div>
                                     <div style={{ display: "flex", gap: "8px" }}>
                                         <button
                                             onClick={() => {
