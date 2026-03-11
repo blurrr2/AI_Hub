@@ -47,7 +47,7 @@ router.get("/", authenticateToken, async (req, res) => {
 router.post("/", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { type, title, lang, tag, status, problem, solution, learned } =
+        const { type, title, lang, tag, status, problem, solution, learned, description } =
             req.body;
 
         // Validation
@@ -88,6 +88,7 @@ router.post("/", authenticateToken, async (req, res) => {
                 problem: problem || "",
                 solution: solution || "",
                 learned: learned || "",
+                description: description || "",
                 createdAt: new Date(),
             },
         });
@@ -107,7 +108,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
         const problemId = parseInt(req.params.id);
-        const { type, title, lang, tag, status, problem, solution, learned } =
+        const { type, title, lang, tag, status, problem, solution, learned, description } =
             req.body;
 
         // Check ownership
@@ -155,6 +156,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
         if (problem !== undefined) updateData.problem = problem;
         if (solution !== undefined) updateData.solution = solution;
         if (learned !== undefined) updateData.learned = learned;
+        if (description !== undefined) updateData.description = description;
 
         const updated = await prismaClient.codingProblem.update({
             where: { id: problemId },

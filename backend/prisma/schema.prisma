@@ -79,21 +79,22 @@ model CodingResource {
 }
 
 model CodingProblem {
-  id        Int     @id @default(autoincrement())
-  userId    Int
-  type      String
-  title     String
-  language  String
-  tag       String
-  status    String @default("todo")
-  problem   String?
-  solution  String?
-  learned   String?
-  createdAt DateTime @default(now())
-  
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  type        String
+  title       String
+  language    String
+  tag         String
+  status      String @default("todo")
+  problem     String?
+  solution    String?
+  learned     String?
+  description String?
+  createdAt   DateTime @default(now())
+
   // Relations
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("coding_problems")
 }
 

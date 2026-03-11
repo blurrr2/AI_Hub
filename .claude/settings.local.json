@@ -7,7 +7,8 @@
       "Bash(git commit -m \"feat: real news feed from database\")",
       "Bash(npm run deploy)",
       "Bash(git commit -m \"fix: bookmark feature - use req.user.userId instead of req.user.id\")",
-      "Bash(git commit -m \"feat: redesign login page to match app design system\")"
+      "Bash(git commit -m \"feat: redesign login page to match app design system\")",
+      "Bash(npx tsc -b)"
     ]
   }
 }

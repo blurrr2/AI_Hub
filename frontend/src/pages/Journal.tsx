@@ -13,6 +13,7 @@ interface Problem {
     problem?: string;
     solution?: string;
     learned?: string;
+    description?: string;
     createdAt: string;
 }
 
@@ -37,6 +38,7 @@ export default function Journal() {
         problem: "",
         solution: "",
         learned: "",
+        description: "",
     });
     const [submitting, setSubmitting] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -48,6 +50,7 @@ export default function Journal() {
         problem: "",
         solution: "",
         learned: "",
+        description: "",
     });
 
     useEffect(() => {
@@ -112,6 +115,7 @@ export default function Journal() {
                         problem: editData.problem,
                         solution: editData.solution,
                         learned: editData.learned,
+                        description: editData.description,
                     }),
                 },
             );
@@ -266,6 +270,7 @@ export default function Journal() {
                                 problem: "",
                                 solution: "",
                                 learned: "",
+                                description: "",
                             });
                         }}
                         style={{
@@ -547,6 +552,7 @@ export default function Journal() {
                                                     problem: selected.problem || "",
                                                     solution: selected.solution || "",
                                                     learned: selected.learned || "",
+                                                    description: selected.description || "",
                                                 });
                                             }}
                                             style={{
@@ -577,6 +583,33 @@ export default function Journal() {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Description Section */}
+                                {selected.description && (
+                                    <div style={{ marginBottom: "20px" }}>
+                                        <h4
+                                            style={{
+                                                fontSize: "13px",
+                                                fontWeight: 700,
+                                                color: "#0f1117",
+                                                margin: "0 0 8px 0",
+                                            }}
+                                        >
+                                            📄 Description
+                                        </h4>
+                                        <p
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "13px",
+                                                color: "#5a5450",
+                                                whiteSpace: "pre-wrap",
+                                                lineHeight: "1.5",
+                                            }}
+                                        >
+                                            {selected.description}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Problem Section */}
                                 {selected.problem && (
@@ -903,6 +936,42 @@ export default function Journal() {
                                 />
                             </div>
 
+                            {/* DESCRIPTION TEXTAREA */}
+                            <div>
+                                <label
+                                    style={{
+                                        display: "block",
+                                        fontSize: "13px",
+                                        fontWeight: 600,
+                                        color: "#0f1117",
+                                        marginBottom: "6px",
+                                    }}
+                                >
+                                    Description
+                                </label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                    placeholder="Briefly describe this problem or topic..."
+                                    rows={3}
+                                    style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        fontSize: "14px",
+                                        border: "1px solid #e1ddd4",
+                                        borderRadius: "4px",
+                                        fontFamily: "Inter, sans-serif",
+                                        boxSizing: "border-box",
+                                        resize: "vertical",
+                                    }}
+                                />
+                            </div>
+
                             {/* LANGUAGE + TOPIC ROW */}
                             <div
                                 style={{
@@ -1051,87 +1120,6 @@ export default function Journal() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* PREVIEW STRIP */}
-                            {(formData.title ||
-                                selectedType ||
-                                formData.status) && (
-                                <div
-                                    style={{
-                                        padding: "12px",
-                                        background: "var(--surface2)",
-                                        borderRadius: "4px",
-                                        border: "1px solid var(--border)",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            fontSize: "11px",
-                                            color: "var(--ink3)",
-                                            marginBottom: "6px",
-                                            textTransform: "uppercase",
-                                            letterSpacing: "0.5px",
-                                        }}
-                                    >
-                                        Preview
-                                    </div>
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            gap: "8px",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {selectedType && (
-                                            <span
-                                                style={{
-                                                    fontSize: "11px",
-                                                    background:
-                                                        "var(--surface2)",
-                                                    color: "var(--ink2)",
-                                                    padding: "3px 8px",
-                                                    borderRadius: "2px",
-                                                }}
-                                            >
-                                                {selectedType}
-                                            </span>
-                                        )}
-                                        {formData.title && (
-                                            <span
-                                                style={{
-                                                    fontSize: "13px",
-                                                    fontWeight: 600,
-                                                    color: "var(--ink)",
-                                                }}
-                                            >
-                                                {formData.title}
-                                            </span>
-                                        )}
-                                        {formData.status && (
-                                            <span
-                                                style={{
-                                                    fontSize: "11px",
-                                                    background:
-                                                        formData.status ===
-                                                        "Solved"
-                                                            ? "#d4edda"
-                                                            : "#fff3cd",
-                                                    color:
-                                                        formData.status ===
-                                                        "Solved"
-                                                            ? "#155724"
-                                                            : "#856404",
-                                                    padding: "3px 8px",
-                                                    borderRadius: "2px",
-                                                    marginLeft: "auto",
-                                                }}
-                                            >
-                                                {formData.status}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* MODAL FOOTER */}
@@ -1205,6 +1193,7 @@ export default function Journal() {
                                                     problem: formData.problem,
                                                     solution: formData.solution,
                                                     learned: formData.learned,
+                                                    description: formData.description,
                                                 }),
                                             },
                                         );
@@ -1290,6 +1279,13 @@ export default function Journal() {
                                 onChange={(e) => setEditData({ ...editData, title: e.target.value })}
                                 placeholder="Title"
                                 style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)" }}
+                            />
+                            <textarea
+                                value={editData.description}
+                                onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                                placeholder="Description"
+                                rows={3}
+                                style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)", resize: "vertical" }}
                             />
                             <textarea
                                 value={editData.problem}
