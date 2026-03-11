@@ -68,4 +68,28 @@ router.get("/stats", authenticateToken, async (req, res) => {
     }
 });
 
+// GET /api/dashboard/activity - returns recent user activities
+router.get("/activity", authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+
+        const activities = await prisma.userActivity.findMany({
+            where: { userId },
+            orderBy: { date: "desc" },
+            take: 5,
+        });
+
+        const formattedActivities = activities.map((activity) => ({
+            type: activity.type,
+            description: `${activity.type} - ${activity.count} time(s)`,
+            createdAt: activity.date,
+        }));
+
+        res.json(formattedActivities);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch activities" });
+    }
+});
+
 export default router;

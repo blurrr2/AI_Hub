@@ -54,22 +54,53 @@ export const Dashboard: React.FC = () => {
         streak: 0,
     });
 
-    // Fetch dashboard stats from API
+    // Activities state
+    const [activities, setActivities] = React.useState<ActivityItem[]>([]);
+
+    // Fetch dashboard stats and activities from API
     React.useEffect(() => {
-        const fetchStats = async () => {
+        const fetchData = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("/api/dashboard/stats", {
+
+                // Fetch stats
+                const statsResponse = await axios.get("/api/dashboard/stats", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setStats(response.data);
+                setStats(statsResponse.data);
+
+                // Fetch activities
+                const activitiesResponse = await axios.get("/api/dashboard/activity", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                // Map backend activities to frontend format
+                const mappedActivities = activitiesResponse.data.map((act: any, index: number) => {
+                    const icons: Record<string, string> = {
+                        news: "📰",
+                        resource: "📚",
+                        problem: "✅",
+                        default: "🎓",
+                    };
+
+                    const timeAgo = new Date(act.createdAt).toLocaleDateString();
+
+                    return {
+                        id: index.toString(),
+                        title: act.type,
+                        description: act.description,
+                        icon: icons[act.type.toLowerCase()] || icons.default,
+                        time: timeAgo,
+                    };
+                });
+
+                setActivities(mappedActivities);
             } catch (error) {
-                console.error("Failed to fetch dashboard stats:", error);
-                // Keep default 0 values on error
+                console.error("Failed to fetch dashboard data:", error);
             }
         };
 
-        fetchStats();
+        fetchData();
     }, []);
 
     // Toast state
@@ -325,15 +356,6 @@ export const Dashboard: React.FC = () => {
                                             {animatedCount}
                                             {card.label === "Streak" && "🔥"}
                                         </div>
-                                        <div
-                                            style={{
-                                                fontSize: "11px",
-                                                color: "var(--ink3)",
-                                                marginTop: "4px",
-                                            }}
-                                        >
-                                            +12% vs last week
-                                        </div>
                                     </div>
                                 </div>
                             );
@@ -384,61 +406,73 @@ export const Dashboard: React.FC = () => {
                                 gap: 8,
                             }}
                         >
-                            {activities.map((activity) => (
-                                <div
-                                    key={activity.id}
+                            {activities.length === 0 ? (
+                                <p
                                     style={{
-                                        padding: "12px",
-                                        background: "var(--bg)",
-                                        borderRadius: "4px",
-                                        border: "1px solid var(--border)",
-                                        display: "flex",
-                                        gap: "10px",
+                                        color: "var(--ink3)",
+                                        textAlign: "center",
+                                        padding: "20px",
                                     }}
                                 >
+                                    No activity yet. Start by reading news or solving a problem!
+                                </p>
+                            ) : (
+                                activities.map((activity) => (
                                     <div
+                                        key={activity.id}
                                         style={{
-                                            fontSize: "18px",
-                                            flexShrink: 0,
+                                            padding: "12px",
+                                            background: "var(--bg)",
+                                            borderRadius: "4px",
+                                            border: "1px solid var(--border)",
+                                            display: "flex",
+                                            gap: "10px",
                                         }}
                                     >
-                                        {activity.icon}
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
                                         <div
                                             style={{
-                                                fontSize: "13px",
-                                                fontWeight: 600,
-                                                color: "var(--ink)",
-                                                marginBottom: "2px",
+                                                fontSize: "18px",
+                                                flexShrink: 0,
                                             }}
                                         >
-                                            {activity.title}
+                                            {activity.icon}
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: "13px",
+                                                    fontWeight: 600,
+                                                    color: "var(--ink)",
+                                                    marginBottom: "2px",
+                                                }}
+                                            >
+                                                {activity.title}
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontSize: "11px",
+                                                    color: "var(--ink2)",
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                }}
+                                            >
+                                                {activity.description}
+                                            </div>
                                         </div>
                                         <div
                                             style={{
                                                 fontSize: "11px",
-                                                color: "var(--ink2)",
+                                                color: "var(--ink3)",
+                                                flexShrink: 0,
                                                 whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
                                             }}
                                         >
-                                            {activity.description}
+                                            {activity.time}
                                         </div>
                                     </div>
-                                    <div
-                                        style={{
-                                            fontSize: "11px",
-                                            color: "var(--ink3)",
-                                            flexShrink: 0,
-                                            whiteSpace: "nowrap",
-                                        }}
-                                    >
-                                        {activity.time}
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
 
