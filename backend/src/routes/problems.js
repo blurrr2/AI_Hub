@@ -108,7 +108,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
         const problemId = parseInt(req.params.id);
-        const { type, title, lang, tag, status, problem, solution, learned, description } =
+        const { type, title, lang, tag, status, problem, solution, learned, description, isPublic } =
             req.body;
 
         // Check ownership
@@ -157,6 +157,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
         if (solution !== undefined) updateData.solution = solution;
         if (learned !== undefined) updateData.learned = learned;
         if (description !== undefined) updateData.description = description;
+        if (isPublic !== undefined) updateData.isPublic = isPublic;
 
         const updated = await prismaClient.codingProblem.update({
             where: { id: problemId },
@@ -200,6 +201,41 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     } catch (err) {
         console.error("Error deleting problem:", err);
         res.status(500).json({ error: "Failed to delete problem entry" });
+    }
+});
+
+/**
+ * PATCH /api/problems/:id/visibility
+ * Toggle problem visibility (public/private)
+ */
+router.patch("/:id/visibility", authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const problemId = parseInt(req.params.id);
+        const { isPublic } = req.body;
+
+        // Check ownership
+        const entry = await prismaClient.codingProblem.findUnique({
+            where: { id: problemId },
+        });
+
+        if (!entry) {
+            return res.status(404).json({ error: "Problem entry not found" });
+        }
+
+        if (entry.userId !== userId) {
+            return res.status(403).json({ error: "Unauthorized" });
+        }
+
+        const updated = await prismaClient.codingProblem.update({
+            where: { id: problemId },
+            data: { isPublic },
+        });
+
+        res.json(updated);
+    } catch (err) {
+        console.error("Error updating visibility:", err);
+        res.status(500).json({ error: "Failed to update visibility" });
     }
 });
 

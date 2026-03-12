@@ -550,7 +550,7 @@ export default function Journal() {
                                             onClick={async () => {
                                                 try {
                                                     const token = localStorage.getItem("token");
-                                                    await fetch(buildApiUrl(`/api/problems/${selected.id}/visibility`), {
+                                                    const response = await fetch(buildApiUrl(`/api/problems/${selected.id}/visibility`), {
                                                         method: "PATCH",
                                                         headers: {
                                                             Authorization: `Bearer ${token}`,
@@ -558,7 +558,13 @@ export default function Journal() {
                                                         },
                                                         body: JSON.stringify({ isPublic: !selected.isPublic }),
                                                     });
-                                                    setProblems(problems.map(p => p.id === selected.id ? { ...p, isPublic: !p.isPublic } : p));
+                                                    if (response.ok) {
+                                                        const updated = await response.json();
+                                                        setProblems(problems.map(p => p.id === selected.id ? updated : p));
+                                                        setSelectedId(selected.id);
+                                                    } else {
+                                                        alert("Failed to toggle visibility");
+                                                    }
                                                 } catch {
                                                     alert("Failed to toggle visibility");
                                                 }
