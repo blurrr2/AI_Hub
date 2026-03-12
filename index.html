@@ -10,6 +10,10 @@
         />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
+        <link rel="manifest" href="/AI_Hub/manifest.json" />
+        <meta name="theme-color" content="#c8401a" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="AI Hub" />
         <link
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
@@ -40,5 +44,12 @@
     </head>
     <body>
         <div id="root"></div>
+        <script>
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/AI_Hub/sw.js');
+            });
+          }
+        </script>
     </body>
 </html>
