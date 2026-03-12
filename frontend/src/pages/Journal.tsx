@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import ResizableDivider from "../components/ResizableDivider";
 import { buildApiUrl } from "../api/config";
 
 interface Problem {
@@ -33,38 +34,7 @@ export default function Journal() {
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
     // Resizable panels state
-    const [listWidth, setListWidth] = useState(300);
-    const isDragging = useRef(false);
-    const startXRef = useRef(0);
-    const startWidthRef = useRef(0);
-
-    // Drag handler
-    const handleDragStart = (e: React.MouseEvent) => {
-        isDragging.current = true;
-        startXRef.current = e.clientX;
-        startWidthRef.current = listWidth;
-    };
-
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (isDragging.current) {
-                const delta = e.clientX - startXRef.current;
-                const newWidth = Math.max(200, startWidthRef.current + delta);
-                setListWidth(newWidth);
-            }
-        };
-
-        const handleMouseUp = () => {
-            isDragging.current = false;
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [listWidth]);
+    const [listWidth, setListWidth] = useState(280);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -477,17 +447,7 @@ export default function Journal() {
                         )}
                     </div>
 
-                    {/* DIVIDER */}
-                    <div
-                        style={{
-                            width: "4px",
-                            cursor: "col-resize",
-                            background: "var(--border)",
-                            flexShrink: 0,
-                            userSelect: "none",
-                        }}
-                        onMouseDown={handleDragStart}
-                    />
+                    <ResizableDivider onResize={(d) => setListWidth((w) => Math.max(200, w + d))} />
 
                     {/* RIGHT: Editor Area - flex:1 */}
                     <div

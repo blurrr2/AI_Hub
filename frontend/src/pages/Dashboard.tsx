@@ -475,7 +475,7 @@ export const Dashboard: React.FC = () => {
                         <div
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(2, 1fr)",
+                                gridTemplateColumns: "repeat(3, 1fr)",
                                 gap: 12,
                                 flex: 1,
                             }}

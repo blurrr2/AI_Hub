@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Library.module.css";
 import { Sidebar } from "../components/Sidebar";
+import ResizableDivider from "../components/ResizableDivider";
 import {
     getResources,
     createResource,
@@ -57,51 +58,8 @@ const Library: React.FC = () => {
     });
 
     // Resizable panels state
-    const [leftWidth, setLeftWidth] = useState(200);
-    const [midWidth, setMidWidth] = useState(340);
-    const isDraggingLeft = useRef(false);
-    const isDraggingMid = useRef(false);
-    const startXRef = useRef(0);
-    const startWidthRef = useRef(0);
-
-    // Drag handlers for resizable panels
-    const handleLeftDragStart = (e: React.MouseEvent) => {
-        isDraggingLeft.current = true;
-        startXRef.current = e.clientX;
-        startWidthRef.current = leftWidth;
-    };
-
-    const handleMidDragStart = (e: React.MouseEvent) => {
-        isDraggingMid.current = true;
-        startXRef.current = e.clientX;
-        startWidthRef.current = midWidth;
-    };
-
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (isDraggingLeft.current) {
-                const delta = e.clientX - startXRef.current;
-                const newWidth = Math.max(150, startWidthRef.current + delta);
-                setLeftWidth(newWidth);
-            } else if (isDraggingMid.current) {
-                const delta = e.clientX - startXRef.current;
-                const newWidth = Math.max(250, startWidthRef.current + delta);
-                setMidWidth(newWidth);
-            }
-        };
-
-        const handleMouseUp = () => {
-            isDraggingLeft.current = false;
-            isDraggingMid.current = false;
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [leftWidth, midWidth]);
+    const [col1Width, setCol1Width] = useState(220);
+    const [col2Width, setCol2Width] = useState(340);
     const [modalUrl, setModalUrl] = useState("");
     const [modalTitle, setModalTitle] = useState("");
     const [modalType, setModalType] = useState("");
@@ -580,7 +538,7 @@ const Library: React.FC = () => {
                     {/* LEFT: Filter Panel */}
                     <div
                         className={styles.filterPanel}
-                        style={{ width: `${leftWidth}px`, flexShrink: 0 }}
+                        style={{ width: `${col1Width}px`, minWidth: "150px", flexShrink: 0 }}
                     >
                         <div className={styles.filterGroup}>
                             <h3>Category</h3>
@@ -745,22 +703,12 @@ const Library: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* LEFT DIVIDER */}
-                    <div
-                        style={{
-                            width: "4px",
-                            cursor: "col-resize",
-                            background: "var(--border)",
-                            flexShrink: 0,
-                            userSelect: "none",
-                        }}
-                        onMouseDown={handleLeftDragStart}
-                    />
+                    <ResizableDivider onResize={(d) => setCol1Width((w) => Math.max(150, w + d))} />
 
                     {/* CENTER: Cards Panel */}
                     <div
                         className={styles.cardsPanel}
-                        style={{ width: `${midWidth}px`, flexShrink: 0 }}
+                        style={{ width: `${col2Width}px`, minWidth: "250px", flexShrink: 0 }}
                     >
                         {loading ? (
                             <div className={styles.empty}>Loading...</div>
@@ -880,17 +828,7 @@ const Library: React.FC = () => {
                         )}
                     </div>
 
-                    {/* MID DIVIDER */}
-                    <div
-                        style={{
-                            width: "4px",
-                            cursor: "col-resize",
-                            background: "var(--border)",
-                            flexShrink: 0,
-                            userSelect: "none",
-                        }}
-                        onMouseDown={handleMidDragStart}
-                    />
+                    <ResizableDivider onResize={(d) => setCol2Width((w) => Math.max(250, w + d))} />
 
                     {/* RIGHT: Detail Panel */}
                     <div className={styles.detailPanel} style={{ flex: 1, minWidth: "300px" }}>

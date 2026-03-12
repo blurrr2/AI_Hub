@@ -165,3 +165,14 @@ select:focus {
         padding-bottom: 70px;
     }
 }
+
+/* Global spacing improvements */
+.card {
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.page-content {
+    padding: 24px;
+    gap: 20px;
+}

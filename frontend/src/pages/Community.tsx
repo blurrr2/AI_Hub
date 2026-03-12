@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
+import ResizableDivider from "../components/ResizableDivider";
 import { buildApiUrl } from "../api/config";
 
 interface CommunityEntry {
@@ -33,6 +34,7 @@ export default function Community() {
     const [loading, setLoading] = useState(true);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState("");
+    const [listWidth, setListWidth] = useState(320);
 
     useEffect(() => {
         const fetchEntries = async () => {
@@ -140,7 +142,7 @@ export default function Community() {
                 </div>
 
                 <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-                    <div style={{ width: "320px", borderRight: "1px solid var(--border)", overflowY: "auto" }}>
+                    <div style={{ width: `${listWidth}px`, minWidth: "250px", borderRight: "1px solid var(--border)", overflowY: "auto", flexShrink: 0 }}>
                         {loading ? (
                             <div style={{ padding: "20px", textAlign: "center", color: "var(--ink2)" }}>Loading...</div>
                         ) : entries.length === 0 ? (
@@ -170,7 +172,9 @@ export default function Community() {
                         )}
                     </div>
 
-                    <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+                    <ResizableDivider onResize={(d) => setListWidth((w) => Math.max(250, w + d))} />
+
+                    <div style={{ flex: 1, overflowY: "auto", padding: "24px", minWidth: "300px" }}>
                         {selected ? (
                             <>
                                 <div style={{ marginBottom: "24px" }}>
