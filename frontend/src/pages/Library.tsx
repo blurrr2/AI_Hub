@@ -972,7 +972,7 @@ const Library: React.FC = () => {
                                     onClick={handleAutoFill}
                                     disabled={modalLoading}
                                 >
-                                    ?Auto-fill
+                                    Auto-fill
                                 </button>
                             </div>
                         </div>
