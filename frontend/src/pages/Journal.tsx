@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { buildApiUrl } from "../api/config";
 
 interface Problem {
@@ -31,6 +31,40 @@ export default function Journal() {
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
+
+    // Resizable panels state
+    const [listWidth, setListWidth] = useState(300);
+    const isDragging = useRef(false);
+    const startXRef = useRef(0);
+    const startWidthRef = useRef(0);
+
+    // Drag handler
+    const handleDragStart = (e: React.MouseEvent) => {
+        isDragging.current = true;
+        startXRef.current = e.clientX;
+        startWidthRef.current = listWidth;
+    };
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isDragging.current) {
+                const delta = e.clientX - startXRef.current;
+                const newWidth = Math.max(200, startWidthRef.current + delta);
+                setListWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            isDragging.current = false;
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [listWidth]);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -309,8 +343,8 @@ export default function Journal() {
                     {/* LEFT: Entry List Panel - 300px */}
                     <div
                         style={{
-                            width: "300px",
-                            flex: "0 0 300px",
+                            width: `${listWidth}px`,
+                            flex: `0 0 ${listWidth}px`,
                             background: "var(--surface)",
                             borderRight: "1px solid #e1ddd4",
                             overflowY: "auto",
@@ -443,6 +477,18 @@ export default function Journal() {
                         )}
                     </div>
 
+                    {/* DIVIDER */}
+                    <div
+                        style={{
+                            width: "4px",
+                            cursor: "col-resize",
+                            background: "var(--border)",
+                            flexShrink: 0,
+                            userSelect: "none",
+                        }}
+                        onMouseDown={handleDragStart}
+                    />
+
                     {/* RIGHT: Editor Area - flex:1 */}
                     <div
                         style={{
@@ -450,6 +496,7 @@ export default function Journal() {
                             background: "var(--bg)",
                             overflowY: "auto",
                             padding: "24px",
+                            minWidth: "400px",
                         }}
                     >
                         {!selected ? (
