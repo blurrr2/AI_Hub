@@ -435,10 +435,10 @@ export const NewsFeed: React.FC = () => {
                         }}
                     >
                         {[
-                            { label: "🌐 All", value: "all" },
-                            { label: "🌍 Worldwide", value: "world" },
+                            { label: " All", value: "all" },
+                            { label: " Worldwide", value: "world" },
                             { label: "🇩🇪 Germany", value: "de" },
-                            { label: "🔖 Bookmarks", value: "bookmarks" },
+                            { label: " Bookmarks", value: "bookmarks" },
                         ].map((r) => (
                             <button
                                 key={r.value}
@@ -684,7 +684,7 @@ export const NewsFeed: React.FC = () => {
                                                     : "Add bookmark"
                                             }
                                         >
-                                            {isBookmarked ? "🔖" : "🔗"}
+                                            {isBookmarked ? "" : ""}
                                         </button>
 
                                         <div
@@ -756,7 +756,7 @@ export const NewsFeed: React.FC = () => {
                                                 >
                                                     {article.region === "de"
                                                         ? "🇩🇪 DE"
-                                                        : "🌍 World"}
+                                                        : " World"}
                                                 </span>
                                             </div>
                                         </div>

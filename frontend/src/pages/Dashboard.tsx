@@ -77,10 +77,10 @@ export const Dashboard: React.FC = () => {
                 // Map backend activities to frontend format
                 const mappedActivities = activitiesResponse.data.map((act: any, index: number) => {
                     const icons: Record<string, string> = {
-                        news: "📰",
-                        resource: "📚",
-                        problem: "✅",
-                        default: "🎓",
+                        news: "",
+                        resource: "",
+                        problem: "",
+                        default: "",
                     };
 
                     const timeAgo = new Date(act.createdAt).toLocaleDateString();
@@ -143,7 +143,7 @@ export const Dashboard: React.FC = () => {
                 showToast("Timer started! ⏱️");
                 break;
             case "Join Group":
-                showToast("Coming soon! 🚀");
+                showToast("Coming soon! ");
                 break;
             default:
                 break;
@@ -159,12 +159,12 @@ export const Dashboard: React.FC = () => {
     ];
 
     const quickActions: ActionItem[] = [
-        { icon: "➕", label: "Add Resource", color: "#0066cc" },
-        { icon: "🎯", label: "Solve Problem", color: "#c8401a" },
-        { icon: "📖", label: "Read News", color: "#10b981" },
-        { icon: "📝", label: "New Journal", color: "#8b5cf6" },
+        { icon: "", label: "Add Resource", color: "#0066cc" },
+        { icon: "", label: "Solve Problem", color: "#c8401a" },
+        { icon: "", label: "Read News", color: "#10b981" },
+        { icon: "", label: "New Journal", color: "#8b5cf6" },
         { icon: "⏱️", label: "Start Timer", color: "#f59e0b" },
-        { icon: "🤝", label: "Join Group", color: "#06b6d4" },
+        { icon: "", label: "Join Group", color: "#06b6d4" },
     ];
 
     const handleLogout = () => {
@@ -323,7 +323,7 @@ export const Dashboard: React.FC = () => {
                                             }}
                                         >
                                             {animatedCount}
-                                            {card.label === "Streak" && "🔥"}
+                                            {card.label === "Streak" && ""}
                                         </div>
                                     </div>
                                 </div>

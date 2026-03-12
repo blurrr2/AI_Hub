@@ -51,7 +51,7 @@ const Library: React.FC = () => {
     const [filters, setFilters] = useState<Filters>({
         category: "All",
         type: "All Types",
-        language: "🌐 All",
+        language: " All",
         progress: "All",
         search: "",
     });
@@ -76,7 +76,7 @@ const Library: React.FC = () => {
                     category: filters.category,
                 }),
                 ...(filters.type !== "All Types" && { type: filters.type }),
-                ...(filters.language !== "🌐 All" && {
+                ...(filters.language !== " All" && {
                     lang: filters.language.split(" ")[1] || filters.language,
                 }),
                 ...(filters.progress !== "All" && {
@@ -209,13 +209,13 @@ const Library: React.FC = () => {
     const getTypeIcon = (type: string) => {
         const icons: { [key: string]: string } = {
             YouTube: "▶️",
-            Bilibili: "📺",
-            arXiv: "📑",
-            GitHub: "🐙",
-            Article: "📰",
+            Bilibili: "",
+            arXiv: "",
+            GitHub: "",
+            Article: "",
             X: "𝕏",
         };
-        return icons[type] || "📄";
+        return icons[type] || "";
     };
 
     const getTypeColor = (type: string) => {
@@ -248,7 +248,7 @@ const Library: React.FC = () => {
             CN: "🇨🇳",
             zh: "🇨🇳",
         };
-        return flags[lang] || "🌐";
+        return flags[lang] || "";
     };
 
     const getProgressColor = (progress: number) => {
@@ -283,7 +283,7 @@ const Library: React.FC = () => {
         if (filters.type !== "All Types" && r.type !== filters.type)
             return false;
         if (
-            filters.language !== "🌐 All" &&
+            filters.language !== " All" &&
             !r.language.includes(
                 filters.language.split(" ")[1] || filters.language,
             )
@@ -383,7 +383,7 @@ const Library: React.FC = () => {
                             e.currentTarget.style.background = "#c8401a";
                         }}
                     >
-                        ➕ Add Resource
+                         Add Resource
                     </button>
                 </div>
 
@@ -427,7 +427,7 @@ const Library: React.FC = () => {
                             }
                         }}
                     >
-                        📚 My Resources
+                         My Resources
                         <span
                             style={{
                                 fontSize: "11px",
@@ -470,7 +470,7 @@ const Library: React.FC = () => {
                             }
                         }}
                     >
-                        🌐 Community Picks
+                         Community Picks
                         <span
                             style={{
                                 fontSize: "11px",
@@ -513,7 +513,7 @@ const Library: React.FC = () => {
                             }
                         }}
                     >
-                        📑 AI Papers
+                         AI Papers
                         <span
                             style={{
                                 fontSize: "11px",
@@ -610,7 +610,7 @@ const Library: React.FC = () => {
 
                         <div className={styles.filterGroup}>
                             <h3>Language</h3>
-                            {["🌐 All", "🇨🇳 中文", "🇬🇧 EN", "🇩🇪 DE"].map(
+                            {[" All", "🇨🇳 中文", "🇬🇧 EN", "🇩🇪 DE"].map(
                                 (lang) => (
                                     <label
                                         key={lang}
@@ -766,7 +766,7 @@ const Library: React.FC = () => {
                                                         }
                                                     }}
                                                 >
-                                                    🗑️
+                                                    ️
                                                 </button>
                                             </div>
                                             <div className={styles.cardFooter}>
@@ -819,7 +819,7 @@ const Library: React.FC = () => {
                     <div className={styles.detailPanel}>
                         {!selected ? (
                             <div className={styles.empty}>
-                                👆 Select a resource
+                                 Select a resource
                             </div>
                         ) : (
                             <div className={styles.detailContent}>

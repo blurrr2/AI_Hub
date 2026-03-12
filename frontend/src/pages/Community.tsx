@@ -160,8 +160,8 @@ export default function Community() {
                                         by @{entry.user.username}
                                     </div>
                                     <div style={{ display: "flex", gap: "12px", marginTop: "8px", fontSize: "12px", color: "var(--ink2)" }}>
-                                        <span>❤️ {entry._count.likes}</span>
-                                        <span>💬 {entry._count.comments}</span>
+                                        <span>️ {entry._count.likes}</span>
+                                        <span> {entry._count.comments}</span>
                                     </div>
                                 </div>
                             ))
@@ -202,7 +202,7 @@ export default function Community() {
                                             cursor: "pointer",
                                         }}
                                     >
-                                        ❤️ Like ({selected._count.likes})
+                                        ️ Like ({selected._count.likes})
                                     </button>
                                 </div>
 

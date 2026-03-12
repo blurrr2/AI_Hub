@@ -222,10 +222,10 @@ export default function Journal() {
                     {/* Filter Pills */}
                     <div style={{ display: "flex", gap: "6px" }}>
                         {[
-                            { label: "🐛 Bug", value: "bug" },
-                            { label: "💡 Solution", value: "solution" },
-                            { label: "📝 Note", value: "note" },
-                            { label: "🧩 Challenge", value: "challenge" },
+                            { label: " Bug", value: "bug" },
+                            { label: " Solution", value: "solution" },
+                            { label: " Note", value: "note" },
+                            { label: " Challenge", value: "challenge" },
                         ].map((f) => (
                             <button
                                 key={f.value}
@@ -297,7 +297,7 @@ export default function Journal() {
                             e.currentTarget.style.background = "#c8401a";
                         }}
                     >
-                        ✍️ New Entry
+                        ️ New Entry
                     </button>
                 </div>
 
@@ -463,7 +463,7 @@ export default function Journal() {
                                         marginBottom: "16px",
                                     }}
                                 >
-                                    📔
+                                    
                                 </div>
                                 <h3
                                     style={{
@@ -579,12 +579,12 @@ export default function Journal() {
                                                 cursor: "pointer",
                                             }}
                                         >
-                                            {selected.isPublic ? "🌐 Public" : "🔒 Private"}
+                                            {selected.isPublic ? " Public" : " Private"}
                                         </button>
                                         {selected.isPublic && selected._count && (
                                             <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "var(--ink2)" }}>
-                                                <span>❤️ {selected._count.likes}</span>
-                                                <span>💬 {selected._count.comments}</span>
+                                                <span>️ {selected._count.likes}</span>
+                                                <span> {selected._count.comments}</span>
                                             </div>
                                         )}
                                         <button
@@ -641,7 +641,7 @@ export default function Journal() {
                                                 margin: "0 0 8px 0",
                                             }}
                                         >
-                                            📄 Description
+                                             Description
                                         </h4>
                                         <p
                                             style={{
@@ -668,7 +668,7 @@ export default function Journal() {
                                                 margin: "0 0 8px 0",
                                             }}
                                         >
-                                            ⚠️ Problem
+                                            ️ Problem
                                         </h4>
                                         <p
                                             style={{
@@ -695,7 +695,7 @@ export default function Journal() {
                                                 margin: "0 0 8px 0",
                                             }}
                                         >
-                                            🎯 Solution
+                                             Solution
                                         </h4>
                                         <p
                                             style={{
@@ -722,7 +722,7 @@ export default function Journal() {
                                                 margin: "0 0 8px 0",
                                             }}
                                         >
-                                            📝 What I Learned
+                                             What I Learned
                                         </h4>
                                         <p
                                             style={{
@@ -788,7 +788,7 @@ export default function Journal() {
                                         marginBottom: "8px",
                                     }}
                                 >
-                                    ✍️
+                                    ️
                                 </div>
                                 <h3
                                     style={{
@@ -864,22 +864,22 @@ export default function Journal() {
                                 >
                                     {[
                                         {
-                                            icon: "🐛",
+                                            icon: "",
                                             label: "Bug Log",
                                             value: "bug",
                                         },
                                         {
-                                            icon: "💡",
+                                            icon: "",
                                             label: "Solution",
                                             value: "solution",
                                         },
                                         {
-                                            icon: "📝",
+                                            icon: "",
                                             label: "Daily Note",
                                             value: "note",
                                         },
                                         {
-                                            icon: "🧩",
+                                            icon: "",
                                             label: "Challenge",
                                             value: "challenge",
                                         },
