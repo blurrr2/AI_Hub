@@ -1,0 +1,13 @@
+{
+  "name": "AI Hub",
+  "short_name": "AI Hub",
+  "description": "Your AI News & Learning Dashboard",
+  "start_url": "/AI_Hub/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#c8401a",
+  "icons": [
+    { "src": "/AI_Hub/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/AI_Hub/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -10,7 +10,9 @@
       "Bash(git commit -m \"feat: redesign login page to match app design system\")",
       "Bash(npx tsc -b)",
       "Bash(npx prisma migrate deploy)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(npm install canvas)",
+      "Bash(node generate-icons.js)"
     ]
   }
 }
