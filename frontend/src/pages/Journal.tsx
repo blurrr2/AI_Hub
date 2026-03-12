@@ -1,4 +1,4 @@
-﻿import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
@@ -788,7 +788,6 @@ export default function Journal() {
                                         marginBottom: "8px",
                                     }}
                                 >
-                                    ️
                                 </div>
                                 <h3
                                     style={{
@@ -827,7 +826,7 @@ export default function Journal() {
                                     justifyContent: "center",
                                 }}
                             >
-                                �?
+                                ?
                             </button>
                         </div>
 
