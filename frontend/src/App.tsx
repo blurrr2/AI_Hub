@@ -8,7 +8,9 @@ import { NewsFeed } from "./pages/NewsFeed";
 import Library from "./pages/Library";
 import Journal from "./pages/Journal";
 import Community from "./pages/Community";
+import { BottomNav } from "./components/BottomNav";
 import "./App.css";
+import * as React from "react";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -23,6 +25,34 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <>{children}</>;
 };
 
+// Layout wrapper for protected routes
+const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    React.useEffect(() => {
+        const bottomNav = document.querySelector(".bottom-nav-container") as HTMLElement;
+        if (bottomNav) {
+            bottomNav.style.display = isMobile ? "flex" : "none";
+        }
+    }, [isMobile]);
+
+    return (
+        <>
+            {children}
+            <BottomNav />
+        </>
+    );
+};
+
 function App() {
     return (
         <ThemeProvider>
@@ -35,7 +65,9 @@ function App() {
                         path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <Dashboard />
+                                <ProtectedLayout>
+                                    <Dashboard />
+                                </ProtectedLayout>
                             </ProtectedRoute>
                         }
                     />
@@ -43,7 +75,9 @@ function App() {
                         path="/news"
                         element={
                             <ProtectedRoute>
-                                <NewsFeed />
+                                <ProtectedLayout>
+                                    <NewsFeed />
+                                </ProtectedLayout>
                             </ProtectedRoute>
                         }
                     />
@@ -51,7 +85,9 @@ function App() {
                         path="/library"
                         element={
                             <ProtectedRoute>
-                                <Library />
+                                <ProtectedLayout>
+                                    <Library />
+                                </ProtectedLayout>
                             </ProtectedRoute>
                         }
                     />
@@ -59,7 +95,9 @@ function App() {
                         path="/journal"
                         element={
                             <ProtectedRoute>
-                                <Journal />
+                                <ProtectedLayout>
+                                    <Journal />
+                                </ProtectedLayout>
                             </ProtectedRoute>
                         }
                     />
@@ -67,7 +105,9 @@ function App() {
                         path="/community"
                         element={
                             <ProtectedRoute>
-                                <Community />
+                                <ProtectedLayout>
+                                    <Community />
+                                </ProtectedLayout>
                             </ProtectedRoute>
                         }
                     />

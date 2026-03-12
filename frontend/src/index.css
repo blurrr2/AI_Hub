@@ -139,3 +139,29 @@ select:focus {
     animation: spin 0.8s linear infinite;
     display: inline-block;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 16px !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .news-card,
+    .library-card,
+    .resource-card {
+        width: 100%;
+    }
+
+    body {
+        padding-bottom: 70px;
+    }
+}

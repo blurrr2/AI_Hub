@@ -153,10 +153,13 @@ export default function Journal() {
                 fontFamily: "Inter, sans-serif",
             }}
         >
-            <Sidebar user={user} onLogout={handleLogout} />
+            <div className="sidebar">
+                <Sidebar user={user} onLogout={handleLogout} />
+            </div>
 
             {/* RIGHT MAIN AREA */}
             <div
+                className="main-content"
                 style={{
                     flex: 1,
                     display: "flex",

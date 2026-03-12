@@ -182,10 +182,13 @@ export const Dashboard: React.FC = () => {
                 fontFamily: "Inter, sans-serif",
             }}
         >
-            <Sidebar user={user} onLogout={handleLogout} />
+            <div className="sidebar">
+                <Sidebar user={user} onLogout={handleLogout} />
+            </div>
 
             {/* RIGHT MAIN - light */}
             <div
+                className="main-content"
                 style={{
                     flex: 1,
                     background: "var(--bg)",
@@ -266,6 +269,7 @@ export const Dashboard: React.FC = () => {
                         Guten Tag, {user.username || "User"}!
                     </div>
                     <div
+                        className="stats-grid"
                         style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(5, 1fr)",

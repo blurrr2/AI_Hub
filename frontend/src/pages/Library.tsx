@@ -314,10 +314,12 @@ const Library: React.FC = () => {
 
     return (
         <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <Sidebar user={user} onLogout={handleLogout} />
+            <div className="sidebar">
+                <Sidebar user={user} onLogout={handleLogout} />
+            </div>
 
             {/* Main Area */}
-            <div className={styles.main}>
+            <div className={`${styles.main} main-content`}>
                 {/* Topbar */}
                 <div
                     style={{

@@ -128,8 +128,10 @@ export default function Community() {
 
     return (
         <div style={{ display: "flex", height: "100vh", background: "var(--bg)" }}>
-            <Sidebar user={user} onLogout={handleLogout} />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <div className="sidebar">
+                <Sidebar user={user} onLogout={handleLogout} />
+            </div>
+            <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                 <div style={{ padding: "20px 32px", borderBottom: "1px solid var(--border)" }}>
                     <h1 style={{ fontSize: "24px", fontWeight: 700, color: "var(--ink)" }}>Community</h1>
                     <p style={{ fontSize: "14px", color: "var(--ink2)", marginTop: "4px" }}>

@@ -278,10 +278,13 @@ export const NewsFeed: React.FC = () => {
                     }
                 }
             `}</style>
-            <Sidebar user={user} onLogout={handleLogout} />
+            <div className="sidebar">
+                <Sidebar user={user} onLogout={handleLogout} />
+            </div>
 
             {/* RIGHT MAIN CONTENT */}
             <div
+                className="main-content"
                 style={{
                     flex: 1,
                     background: "var(--bg)",

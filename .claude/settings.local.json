@@ -12,7 +12,8 @@
       "Bash(npx prisma migrate deploy)",
       "Bash(node -e \":*)",
       "Bash(npm install canvas)",
-      "Bash(node generate-icons.js)"
+      "Bash(node generate-icons.js)",
+      "Bash(npm run build)"
     ]
   }
 }
