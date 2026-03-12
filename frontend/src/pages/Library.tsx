@@ -233,7 +233,7 @@ const Library: React.FC = () => {
     const getCategoryColor = (category: string) => {
         const colors: { [key: string]: string } = {
             Python: "#3B7FDB",
-            "ML·AI": "#9D4EDD",
+            "MLAI": "#9D4EDD",
             Java: "#FF9F43",
             JavaScript: "#FFD93D",
             Other: "#B8B8B8",
@@ -537,7 +537,7 @@ const Library: React.FC = () => {
                             {[
                                 "All",
                                 "Python",
-                                "ML·AI",
+                                "MLAI",
                                 "Java",
                                 "JavaScript",
                                 "Other",
@@ -790,7 +790,7 @@ const Library: React.FC = () => {
                                                                         : styles.starEmpty
                                                                 }
                                                             >
-                                                                �?
+                                                                ?
                                                             </span>
                                                         ),
                                                     )}
@@ -935,7 +935,7 @@ const Library: React.FC = () => {
                                         window.open(selected.url, "_blank")
                                     }
                                 >
-                                    �?Open Resource
+                                    ?Open Resource
                                 </button>
                             </div>
                         )}
@@ -972,7 +972,7 @@ const Library: React.FC = () => {
                                     onClick={handleAutoFill}
                                     disabled={modalLoading}
                                 >
-                                    �?Auto-fill
+                                    ?Auto-fill
                                 </button>
                             </div>
                         </div>
@@ -1022,7 +1022,7 @@ const Library: React.FC = () => {
                                     <option value="">Select...</option>
                                     {[
                                         "Python",
-                                        "ML·AI",
+                                        "MLAI",
                                         "Java",
                                         "JavaScript",
                                         "Other",
