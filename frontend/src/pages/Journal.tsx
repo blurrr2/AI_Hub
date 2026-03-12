@@ -297,7 +297,7 @@ export default function Journal() {
                             e.currentTarget.style.background = "#c8401a";
                         }}
                     >
-                        ️ New Entry
+                         New Entry
                     </button>
                 </div>
 
@@ -583,7 +583,7 @@ export default function Journal() {
                                         </button>
                                         {selected.isPublic && selected._count && (
                                             <div style={{ display: "flex", gap: "12px", fontSize: "12px", color: "var(--ink2)" }}>
-                                                <span>️ {selected._count.likes}</span>
+                                                <span> {selected._count.likes}</span>
                                                 <span> {selected._count.comments}</span>
                                             </div>
                                         )}
@@ -668,7 +668,7 @@ export default function Journal() {
                                                 margin: "0 0 8px 0",
                                             }}
                                         >
-                                            ️ Problem
+                                             Problem
                                         </h4>
                                         <p
                                             style={{
@@ -1284,7 +1284,7 @@ export default function Journal() {
                                     }
                                 }}
                             >
-                                {submitting ? "Creating..." : "Create Entry →"}
+                                {submitting ? "Creating..." : "Create Entry "}
                             </button>
                         </div>
                     </div>
