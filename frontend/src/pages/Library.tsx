@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Library.module.css";
 import { Sidebar } from "../components/Sidebar";
+import { useIsMobile } from "../hooks/useIsMobile";
 import {
     getResources,
     createResource,
@@ -37,6 +38,7 @@ interface Filters {
 const Library: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isMobile = useIsMobile();
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -314,12 +316,17 @@ const Library: React.FC = () => {
 
     return (
         <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-            <div className="sidebar">
-                <Sidebar user={user} onLogout={handleLogout} />
-            </div>
+            {!isMobile && (
+                <div className="sidebar">
+                    <Sidebar user={user} onLogout={handleLogout} />
+                </div>
+            )}
 
             {/* Main Area */}
-            <div className={`${styles.main} main-content`}>
+            <div className={`${styles.main} main-content`} style={{
+                marginTop: isMobile ? '52px' : 0,
+                marginBottom: isMobile ? '60px' : 0,
+            }}>
                 {/* Topbar */}
                 <div
                     style={{

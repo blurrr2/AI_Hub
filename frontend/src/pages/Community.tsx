@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface CommunityEntry {
     id: string;
@@ -28,6 +29,7 @@ interface Comment {
 export default function Community() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isMobile = useIsMobile();
     const [entries, setEntries] = useState<CommunityEntry[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -139,10 +141,18 @@ export default function Community() {
 
     return (
         <div style={{ display: "flex", height: "100vh", background: "var(--bg)" }}>
-            <div className="sidebar">
-                <Sidebar user={user} onLogout={handleLogout} />
-            </div>
-            <div className="main-content" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {!isMobile && (
+                <div className="sidebar">
+                    <Sidebar user={user} onLogout={handleLogout} />
+                </div>
+            )}
+            <div className="main-content" style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                marginTop: isMobile ? '52px' : 0,
+                marginBottom: isMobile ? '60px' : 0,
+            }}>
                 <div style={{ padding: "20px 32px", borderBottom: "1px solid var(--border)" }}>
                     <h1 style={{ fontSize: "24px", fontWeight: 700, color: "var(--ink)" }}>Community</h1>
                     <p style={{ fontSize: "14px", color: "var(--ink2)", marginTop: "4px" }}>

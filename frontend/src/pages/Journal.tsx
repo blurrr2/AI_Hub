@@ -3,6 +3,7 @@ import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
 import styles from "./Journal.module.css";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface Problem {
     id: string;
@@ -26,6 +27,7 @@ interface Problem {
 export default function Journal() {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isMobile = useIsMobile();
     const [problems, setProblems] = useState<Problem[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -154,9 +156,11 @@ export default function Journal() {
                 fontFamily: "Inter, sans-serif",
             }}
         >
-            <div className="sidebar">
-                <Sidebar user={user} onLogout={handleLogout} />
-            </div>
+            {!isMobile && (
+                <div className="sidebar">
+                    <Sidebar user={user} onLogout={handleLogout} />
+                </div>
+            )}
 
             {/* RIGHT MAIN AREA */}
             <div
@@ -166,6 +170,8 @@ export default function Journal() {
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
+                    marginTop: isMobile ? '52px' : 0,
+                    marginBottom: isMobile ? '60px' : 0,
                 }}
             >
                 {/* TOPBAR - Single row */}
