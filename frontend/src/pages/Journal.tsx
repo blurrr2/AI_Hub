@@ -186,6 +186,7 @@ export default function Journal() {
                         padding: "14px 24px",
                         gap: "16px",
                         minHeight: "52px",
+                        flexWrap: "wrap",
                     }}
                 >
                     {/* Title */}
@@ -220,9 +221,8 @@ export default function Journal() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{
-                            flex: "0 0 180px",
-                            maxWidth: "300px",
-                            minWidth: "150px",
+                            width: "160px",
+                            flexShrink: 0,
                             padding: "6px 10px",
                             fontSize: "13px",
                             border: "1px solid var(--border)",

@@ -340,6 +340,7 @@ const Library: React.FC = () => {
                         alignItems: "center",
                         gap: "16px",
                         minHeight: "52px",
+                        flexWrap: "wrap",
                     }}
                 >
                     <h1
@@ -365,9 +366,7 @@ const Library: React.FC = () => {
                             setFilters({ ...filters, search: e.target.value })
                         }
                         style={{
-                            flex: 1,
-                            maxWidth: "300px",
-                            minWidth: "150px",
+                            width: "180px",
                             padding: "8px 12px",
                             borderRadius: "4px",
                             border: "1px solid var(--border)",
