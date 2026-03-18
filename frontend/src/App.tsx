@@ -8,7 +8,8 @@ import { NewsFeed } from "./pages/NewsFeed";
 import Library from "./pages/Library";
 import Journal from "./pages/Journal";
 import Community from "./pages/Community";
-import { BottomNav } from "./components/BottomNav";
+import BottomNav from "./components/BottomNav";
+import MobileHeader from "./components/MobileHeader";
 import "./App.css";
 import * as React from "react";
 
@@ -27,26 +28,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 
 // Layout wrapper for protected routes
 const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
-
-    React.useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
-    React.useEffect(() => {
-        const bottomNav = document.querySelector(".bottom-nav-container") as HTMLElement;
-        if (bottomNav) {
-            bottomNav.style.display = isMobile ? "flex" : "none";
-        }
-    }, [isMobile]);
-
     return (
         <>
+            <MobileHeader />
             {children}
             <BottomNav />
         </>

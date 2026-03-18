@@ -1,83 +1,39 @@
-import { Link, useLocation } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useIsMobile } from '../hooks/useIsMobile';
 
-export const BottomNav: React.FC = () => {
-    const location = useLocation();
-    const { theme } = useTheme();
-    const isDark = theme === "dark";
+export default function BottomNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  if (!isMobile) return null;
 
-    const navItems = [
-        { label: "Dashboard", path: "/dashboard", icon: "📊" },
-        { label: "News", path: "/news", icon: "📰" },
-        { label: "Library", path: "/library", icon: "📚" },
-        { label: "Journal", path: "/journal", icon: "📝" },
-        { label: "Community", path: "/community", icon: "👥" },
-    ];
+  const tabs = [
+    { path: '/dashboard', label: 'Home', icon: '⊞' },
+    { path: '/news', label: 'News', icon: '📰' },
+    { path: '/library', label: 'Library', icon: '📚' },
+    { path: '/journal', label: 'Journal', icon: '✏️' },
+    { path: '/community', label: 'Community', icon: '👥' },
+  ];
 
-    return (
-        <div
-            style={{
-                display: "none",
-                position: "fixed",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: "70px",
-                background: isDark ? "#0f1117" : "#ffffff",
-                borderTop: `1px solid ${isDark ? "#1e2535" : "#e2ddd6"}`,
-                zIndex: 1000,
-            }}
-            className="bottom-nav-container"
-        >
-            <nav
-                style={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    alignItems: "center",
-                    height: "100%",
-                    padding: "0 8px",
-                }}
-            >
-                {navItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            style={{ textDecoration: "none" }}
-                        >
-                            <div
-                                style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                    padding: "8px 12px",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                    color: isActive ? "#c8401a" : "var(--ink2)",
-                                    fontSize: "12px",
-                                    fontWeight: isActive ? 600 : 500,
-                                    transition: "all 0.2s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.color = "var(--ink)";
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isActive) {
-                                        e.currentTarget.style.color = "var(--ink2)";
-                                    }
-                                }}
-                            >
-                                <span style={{ fontSize: "20px" }}>{item.icon}</span>
-                                <span>{item.label}</span>
-                            </div>
-                        </Link>
-                    );
-                })}
-            </nav>
-        </div>
-    );
-};
+  return (
+    <div style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      display: 'flex', background: 'var(--surface)',
+      borderTop: '1px solid var(--border)',
+      zIndex: 1000, paddingBottom: 'env(safe-area-inset-bottom)'
+    }}>
+      {tabs.map(tab => (
+        <button key={tab.path} onClick={() => navigate(tab.path)}
+          style={{
+            flex: 1, padding: '10px 0', border: 'none', cursor: 'pointer',
+            background: 'transparent', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: '2px',
+            color: location.pathname === tab.path ? '#c8401a' : 'var(--ink3)',
+          }}>
+          <span style={{fontSize: '20px'}}>{tab.icon}</span>
+          <span style={{fontSize: '10px', fontFamily: 'Inter'}}>{tab.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}

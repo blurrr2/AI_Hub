@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Sidebar } from "../components/Sidebar";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface Article {
     id: number;
@@ -38,6 +39,7 @@ interface QueryParams {
 export const NewsFeed: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isMobile = useIsMobile();
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -278,9 +280,11 @@ export const NewsFeed: React.FC = () => {
                     }
                 }
             `}</style>
-            <div className="sidebar">
-                <Sidebar user={user} onLogout={handleLogout} />
-            </div>
+            {!isMobile && (
+                <div className="sidebar">
+                    <Sidebar user={user} onLogout={handleLogout} />
+                </div>
+            )}
 
             {/* RIGHT MAIN CONTENT */}
             <div
@@ -291,6 +295,8 @@ export const NewsFeed: React.FC = () => {
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
+                    marginTop: isMobile ? '52px' : 0,
+                    marginBottom: isMobile ? '60px' : 0,
                 }}
             >
                 {/* TOPBAR - Title, Search, Updated, Refresh */}

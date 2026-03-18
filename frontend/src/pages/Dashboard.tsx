@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import * as React from "react";
 import axios from "axios";
 import { Sidebar } from "../components/Sidebar";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface StatCardProps {
     label: string;
@@ -44,6 +45,7 @@ function useCountUp(target: number, duration: number = 1200) {
 export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isMobile = useIsMobile();
 
     // Stats state
     const [stats, setStats] = React.useState({
@@ -182,9 +184,11 @@ export const Dashboard: React.FC = () => {
                 fontFamily: "Inter, sans-serif",
             }}
         >
-            <div className="sidebar">
-                <Sidebar user={user} onLogout={handleLogout} />
-            </div>
+            {!isMobile && (
+                <div className="sidebar">
+                    <Sidebar user={user} onLogout={handleLogout} />
+                </div>
+            )}
 
             {/* RIGHT MAIN - light */}
             <div
@@ -195,6 +199,8 @@ export const Dashboard: React.FC = () => {
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
+                    marginTop: isMobile ? '52px' : 0,
+                    marginBottom: isMobile ? '60px' : 0,
                 }}
             >
                 {/* TOP: greeting + 5 stat cards in ONE horizontal row */}
@@ -272,7 +278,7 @@ export const Dashboard: React.FC = () => {
                         className="stats-grid"
                         style={{
                             display: "grid",
-                            gridTemplateColumns: "repeat(5, 1fr)",
+                            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(5, 1fr)",
                             gap: 12,
                         }}
                     >
@@ -341,7 +347,7 @@ export const Dashboard: React.FC = () => {
                     style={{
                         flex: 1,
                         display: "grid",
-                        gridTemplateColumns: "1.5fr 1fr",
+                        gridTemplateColumns: isMobile ? "1fr" : "1.5fr 1fr",
                         gap: 16,
                         padding: 20,
                         overflow: "hidden",
