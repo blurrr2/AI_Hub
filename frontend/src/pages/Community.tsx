@@ -55,22 +55,33 @@ export default function Community() {
     }, []);
 
     useEffect(() => {
-        if (!selectedId) return;
+        if (!selectedId) {
+            setComments([]);
+            return;
+        }
+
+        let cancelled = false;
         const fetchComments = async () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await fetch(buildApiUrl(`/api/problems/${selectedId}/comments`), {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (response.ok) {
+                if (response.ok && !cancelled) {
                     const data = await response.json();
                     setComments(data);
                 }
             } catch {
-                console.error("Failed to load comments");
+                if (!cancelled) {
+                    console.error("Failed to load comments");
+                }
             }
         };
         fetchComments();
+
+        return () => {
+            cancelled = true;
+        };
     }, [selectedId]);
 
     const handleLogout = () => {
