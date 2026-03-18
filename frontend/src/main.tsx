@@ -15,6 +15,11 @@ axios.interceptors.request.use((config) => {
     return config;
 });
 
+// Keep backend alive (Render free tier sleeps after 15min inactivity)
+setInterval(() => {
+    fetch('https://ai-hub-4wce.onrender.com/health').catch(() => {});
+}, 10 * 60 * 1000); // ping every 10 minutes
+
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <App />
