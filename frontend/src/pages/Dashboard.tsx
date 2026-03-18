@@ -105,19 +105,6 @@ export const Dashboard: React.FC = () => {
         fetchData();
     }, []);
 
-    // Toast state
-    const [toasts, setToasts] = React.useState<
-        Array<{ id: string; message: string }>
-    >([]);
-
-    const showToast = (message: string) => {
-        const id = Math.random().toString(36).substr(2, 9);
-        setToasts((prev) => [...prev, { id, message }]);
-        setTimeout(() => {
-            setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, 3000);
-    };
-
     // Syncing state
     const [syncing, setSyncing] = React.useState(false);
 
@@ -522,51 +509,6 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Toast Notifications */}
-                <div
-                    style={{
-                        position: "fixed",
-                        bottom: "24px",
-                        right: "24px",
-                        zIndex: 1000,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                    }}
-                >
-                    {toasts.map((toast) => (
-                        <div
-                            key={toast.id}
-                            style={{
-                                padding: "12px 16px",
-                                borderRadius: "6px",
-                                background: "var(--success)",
-                                color: "var(--surface)",
-                                fontSize: "13px",
-                                fontWeight: 500,
-                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                                animation: "slideIn 0.3s ease-out",
-                            }}
-                        >
-                            {toast.message}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Toast Animation */}
-                <style>{`
-                    @keyframes slideIn {
-                        from {
-                            transform: translateX(400px);
-                            opacity: 0;
-                        }
-                        to {
-                            transform: translateX(0);
-                            opacity: 1;
-                        }
-                    }
-                `}</style>
             </div>
         </div>
     );
