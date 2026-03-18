@@ -18,6 +18,11 @@ app.use(
 );
 app.use(express.json());
 
+// Health check
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/news", newsRoutes);
@@ -25,10 +30,5 @@ app.use("/api/resources", resourcesRoutes);
 app.use("/api/problems", problemsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/community", communityRoutes);
-
-// Health check
-app.get("/health", (req, res) => {
-    res.json({ status: "ok" });
-});
 
 export default app;
