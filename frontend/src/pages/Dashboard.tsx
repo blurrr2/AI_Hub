@@ -141,12 +141,6 @@ export const Dashboard: React.FC = () => {
             case "New Journal":
                 navigate("/journal");
                 break;
-            case "Start Timer":
-                showToast("Timer started! ⏱️");
-                break;
-            case "Join Group":
-                showToast("Coming soon! ");
-                break;
             default:
                 break;
         }
@@ -161,12 +155,10 @@ export const Dashboard: React.FC = () => {
     ];
 
     const quickActions: ActionItem[] = [
-        { icon: "", label: "Add Resource", color: "#0066cc" },
-        { icon: "", label: "Solve Problem", color: "#c8401a" },
-        { icon: "", label: "Read News", color: "#10b981" },
-        { icon: "", label: "New Journal", color: "#8b5cf6" },
-        { icon: "⏱️", label: "Start Timer", color: "#f59e0b" },
-        { icon: "", label: "Join Group", color: "#06b6d4" },
+        { icon: "📚", label: "Add Resource", color: "#0066cc" },
+        { icon: "💡", label: "Solve Problem", color: "#c8401a" },
+        { icon: "📰", label: "Read News", color: "#10b981" },
+        { icon: "✏️", label: "New Journal", color: "#8b5cf6" },
     ];
 
     const handleLogout = () => {
@@ -479,14 +471,11 @@ export const Dashboard: React.FC = () => {
                             Quick Actions
                         </div>
                         <div
-                            className="quick-actions-grid"
                             style={{
-                                display: "flex",
-                                overflowX: "auto",
-                                gap: 12,
-                                paddingBottom: "8px",
-                                scrollbarWidth: "none",
-                                WebkitOverflowScrolling: "touch",
+                                display: "grid",
+                                gridTemplateColumns: "repeat(2, 1fr)",
+                                gap: "12px",
+                                width: "100%",
                             }}
                         >
                             {quickActions.map((action, idx) => (
@@ -500,17 +489,16 @@ export const Dashboard: React.FC = () => {
                                         flexDirection: "column",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        padding: "16px 12px",
+                                        padding: "16px",
                                         background: "var(--surface)",
                                         border: "1px solid var(--border)",
-                                        borderRadius: "6px",
+                                        borderRadius: "12px",
                                         cursor: "pointer",
                                         transition: "all 0.2s",
-                                        fontSize: "12px",
+                                        fontSize: "13px",
                                         fontWeight: 600,
                                         color: "var(--ink)",
-                                        minWidth: "120px",
-                                        flexShrink: 0,
+                                        gap: "8px",
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.borderColor =
@@ -525,15 +513,10 @@ export const Dashboard: React.FC = () => {
                                             "var(--surface)";
                                     }}
                                 >
-                                    <div
-                                        style={{
-                                            fontSize: "20px",
-                                            marginBottom: "6px",
-                                        }}
-                                    >
+                                    <span style={{ fontSize: "24px" }}>
                                         {action.icon}
-                                    </div>
-                                    <div>{action.label}</div>
+                                    </span>
+                                    {action.label}
                                 </button>
                             ))}
                         </div>

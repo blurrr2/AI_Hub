@@ -490,6 +490,10 @@ export const NewsFeed: React.FC = () => {
                             gap: "8px",
                             alignItems: "center",
                             padding: "6px 0",
+                            overflowX: "auto",
+                            flexWrap: "nowrap",
+                            scrollbarWidth: "none",
+                            WebkitOverflowScrolling: "touch",
                         }}
                     >
                         {tags.map((t) => (
