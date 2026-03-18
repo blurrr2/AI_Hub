@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Library.module.css";
 import { Sidebar } from "../components/Sidebar";
 import { useIsMobile } from "../hooks/useIsMobile";
+import ResizableDivider from "../components/ResizableDivider";
 import {
     getResources,
     createResource,
@@ -48,6 +49,8 @@ const Library: React.FC = () => {
     const [tab, setTab] = useState<"my" | "community" | "papers">("my");
     const [resources, setResources] = useState<Resource[]>([]);
     const [loading, setLoading] = useState(false);
+    const [col1Width, setCol1Width] = useState(220);
+    const [col2Width, setCol2Width] = useState(340);
     const [selected, setSelected] = useState<Resource | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [filters, setFilters] = useState<Filters>({
@@ -540,7 +543,7 @@ const Library: React.FC = () => {
                 {/* Body: 3 Columns */}
                 <div className={styles.body}>
                     {/* LEFT: Filter Panel */}
-                    <div className={styles.filterPanel}>
+                    <div className={styles.filterPanel} style={{width: col1Width, minWidth: 150, flexShrink: 0}}>
                         <div className={styles.filterGroup}>
                             <h3>Category</h3>
                             {[
@@ -704,8 +707,10 @@ const Library: React.FC = () => {
                         </div>
                     </div>
 
+                    <ResizableDivider onResize={(d) => setCol1Width(w => Math.max(150, w + d))} />
+
                     {/* CENTER: Cards Panel */}
-                    <div className={styles.cardsPanel}>
+                    <div className={styles.cardsPanel} style={{width: col2Width, minWidth: 200, flexShrink: 0}}>
                         {loading ? (
                             <div className={styles.empty}>Loading...</div>
                         ) : filtered.length === 0 ? (
@@ -824,8 +829,10 @@ const Library: React.FC = () => {
                         )}
                     </div>
 
+                    <ResizableDivider onResize={(d) => setCol2Width(w => Math.max(200, w + d))} />
+
                     {/* RIGHT: Detail Panel */}
-                    <div className={styles.detailPanel}>
+                    <div className={styles.detailPanel} style={{flex: 1, minWidth: 250}}>
                         {!selected ? (
                             <div className={styles.empty}>
                                  Select a resource

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
 import styles from "./Journal.module.css";
 import { useIsMobile } from "../hooks/useIsMobile";
+import ResizableDivider from "../components/ResizableDivider";
 
 interface Problem {
     id: string;
@@ -29,6 +30,7 @@ export default function Journal() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isMobile = useIsMobile();
     const [problems, setProblems] = useState<Problem[]>([]);
+    const [listWidth, setListWidth] = useState(280);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -317,8 +319,9 @@ export default function Journal() {
                     <div
                         className={styles.entryList}
                         style={{
-                            width: "300px",
-                            flex: "0 0 300px",
+                            width: listWidth,
+                            minWidth: 200,
+                            flexShrink: 0,
                             background: "var(--surface)",
                             borderRight: "1px solid #e1ddd4",
                             overflowY: "auto",
@@ -451,11 +454,14 @@ export default function Journal() {
                         )}
                     </div>
 
+                    <ResizableDivider onResize={(d) => setListWidth(w => Math.max(200, w + d))} />
+
                     {/* RIGHT: Editor Area - flex:1 */}
                     <div
                         className={styles.editor}
                         style={{
                             flex: 1,
+                            minWidth: 300,
                             background: "var(--bg)",
                             overflowY: "auto",
                             padding: "24px",

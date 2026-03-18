@@ -3,6 +3,7 @@ import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
 import { useIsMobile } from "../hooks/useIsMobile";
+import ResizableDivider from "../components/ResizableDivider";
 
 interface CommunityEntry {
     id: string;
@@ -31,6 +32,7 @@ export default function Community() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isMobile = useIsMobile();
     const [entries, setEntries] = useState<CommunityEntry[]>([]);
+    const [listWidth, setListWidth] = useState(320);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [comments, setComments] = useState<Comment[]>([]);
@@ -162,7 +164,9 @@ export default function Community() {
 
                 <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
                     <div style={{
-                        width: "320px",
+                        width: listWidth,
+                        minWidth: 250,
+                        flexShrink: 0,
                         borderRight: "1px solid var(--border)",
                         overflowY: "auto"
                     }}>
@@ -195,8 +199,11 @@ export default function Community() {
                         )}
                     </div>
 
+                    <ResizableDivider onResize={(d) => setListWidth(w => Math.max(250, w + d))} />
+
                     <div style={{
                         flex: 1,
+                        minWidth: 300,
                         overflowY: "auto",
                         padding: "24px"
                     }}>
