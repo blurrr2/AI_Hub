@@ -793,7 +793,6 @@ export const NewsFeed: React.FC = () => {
                                     </a>
                                 );
                             })}
-                        </div>
 
                         {/* Pagination */}
                         {articles.length > articlesPerPage && (
@@ -841,6 +840,7 @@ export const NewsFeed: React.FC = () => {
                                 ))}
                             </div>
                         )}
+                        </div>
                     )}
                 </div>
 
