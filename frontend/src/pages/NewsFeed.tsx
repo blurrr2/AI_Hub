@@ -563,8 +563,7 @@ export const NewsFeed: React.FC = () => {
                         borderBottom: "1px solid var(--border)",
                     }}
                 >
-                    {pagination.total} articles · Page {pagination.page} of{" "}
-                    {pagination.pages}
+                    {pagination.total} articles
                 </div>
 
                 {/* Articles List */}
@@ -783,111 +782,6 @@ export const NewsFeed: React.FC = () => {
                         </div>
                     )}
                 </div>
-
-                {/* Pagination */}
-                {!loading && articles.length > 0 && (
-                    <div
-                        style={{
-                            background: "var(--surface)",
-                            borderTop: "1px solid var(--border)",
-                            padding: "12px 24px",
-                            display: "flex",
-                            gap: 8,
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        <button
-                            onClick={() =>
-                                fetchArticles(Math.max(1, pagination.page - 1))
-                            }
-                            disabled={pagination.page === 1}
-                            style={{
-                                padding: "8px 12px",
-                                borderRadius: "4px",
-                                border: "1px solid var(--border)",
-                                background: "var(--bg)",
-                                cursor:
-                                    pagination.page === 1
-                                        ? "not-allowed"
-                                        : "pointer",
-                                fontSize: "13px",
-                                opacity: pagination.page === 1 ? 0.5 : 1,
-                                transition: "all 0.2s",
-                            }}
-                        >
-                            ← Previous
-                        </button>
-
-                        {Array.from({
-                            length: Math.min(5, pagination.pages),
-                        }).map((_, i) => {
-                            const pageNum =
-                                Math.max(1, pagination.page - 2) + i;
-                            if (pageNum > pagination.pages) return null;
-                            return (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => fetchArticles(pageNum)}
-                                    style={{
-                                        padding: "8px 12px",
-                                        borderRadius: "4px",
-                                        border:
-                                            pageNum === pagination.page
-                                                ? "1px solid #c8401a"
-                                                : "1px solid var(--border)",
-                                        background:
-                                            pageNum === pagination.page
-                                                ? "#c8401a"
-                                                : "var(--bg)",
-                                        color:
-                                            pageNum === pagination.page
-                                                ? "var(--surface)"
-                                                : "#1a1a1a",
-                                        cursor: "pointer",
-                                        fontSize: "13px",
-                                        fontWeight:
-                                            pageNum === pagination.page
-                                                ? 600
-                                                : 400,
-                                    }}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
-
-                        <button
-                            onClick={() =>
-                                fetchArticles(
-                                    Math.min(
-                                        pagination.pages,
-                                        pagination.page + 1,
-                                    ),
-                                )
-                            }
-                            disabled={pagination.page === pagination.pages}
-                            style={{
-                                padding: "8px 12px",
-                                borderRadius: "4px",
-                                border: "1px solid var(--border)",
-                                background: "var(--bg)",
-                                cursor:
-                                    pagination.page === pagination.pages
-                                        ? "not-allowed"
-                                        : "pointer",
-                                fontSize: "13px",
-                                opacity:
-                                    pagination.page === pagination.pages
-                                        ? 0.5
-                                        : 1,
-                                transition: "all 0.2s",
-                            }}
-                        >
-                            Next →
-                        </button>
-                    </div>
-                )}
 
                 {/* Toast Notifications */}
                 <div

@@ -443,7 +443,6 @@ export const Dashboard: React.FC = () => {
                             padding: "16px",
                             display: "flex",
                             flexDirection: "column",
-                            overflow: "hidden",
                         }}
                     >
                         <div
