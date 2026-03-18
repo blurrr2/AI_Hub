@@ -343,6 +343,7 @@ export const NewsFeed: React.FC = () => {
                             display: "flex",
                             gap: 8,
                             minWidth: "200px",
+                            maxWidth: "400px",
                         }}
                     >
                         <input
@@ -352,6 +353,8 @@ export const NewsFeed: React.FC = () => {
                             onChange={(e) => setSearch(e.target.value)}
                             style={{
                                 flex: 1,
+                                maxWidth: "300px",
+                                minWidth: "150px",
                                 padding: "8px 12px",
                                 borderRadius: "4px",
                                 border: "1px solid var(--border)",

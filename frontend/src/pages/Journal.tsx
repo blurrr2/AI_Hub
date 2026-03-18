@@ -30,7 +30,7 @@ export default function Journal() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isMobile = useIsMobile();
     const [problems, setProblems] = useState<Problem[]>([]);
-    const [listWidth, setListWidth] = useState(280);
+    const [listWidth, setListWidth] = useState(isMobile ? 140 : 280);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -221,6 +221,8 @@ export default function Journal() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{
                             flex: "0 0 180px",
+                            maxWidth: "300px",
+                            minWidth: "150px",
                             padding: "6px 10px",
                             fontSize: "13px",
                             border: "1px solid var(--border)",
@@ -320,7 +322,8 @@ export default function Journal() {
                         className={styles.entryList}
                         style={{
                             width: listWidth,
-                            minWidth: 200,
+                            minWidth: isMobile ? 100 : 200,
+                            maxWidth: isMobile ? '40%' : '50%',
                             flexShrink: 0,
                             background: "var(--surface)",
                             borderRight: "1px solid #e1ddd4",

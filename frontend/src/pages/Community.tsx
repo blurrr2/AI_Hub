@@ -32,7 +32,7 @@ export default function Community() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const isMobile = useIsMobile();
     const [entries, setEntries] = useState<CommunityEntry[]>([]);
-    const [listWidth, setListWidth] = useState(320);
+    const [listWidth, setListWidth] = useState(isMobile ? 140 : 320);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [comments, setComments] = useState<Comment[]>([]);
@@ -165,7 +165,8 @@ export default function Community() {
                 <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
                     <div style={{
                         width: listWidth,
-                        minWidth: 250,
+                        minWidth: isMobile ? 100 : 250,
+                        maxWidth: isMobile ? '40%' : '50%',
                         flexShrink: 0,
                         borderRight: "1px solid var(--border)",
                         overflowY: "auto"

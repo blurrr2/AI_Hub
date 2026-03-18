@@ -366,6 +366,8 @@ const Library: React.FC = () => {
                         }
                         style={{
                             flex: 1,
+                            maxWidth: "300px",
+                            minWidth: "150px",
                             padding: "8px 12px",
                             borderRadius: "4px",
                             border: "1px solid var(--border)",
