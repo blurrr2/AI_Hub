@@ -566,7 +566,12 @@ export const NewsFeed: React.FC = () => {
 
                 {/* Articles List */}
                 <div
-                    style={{ flex: 1, padding: "20px 24px", overflowY: "auto" }}
+                    style={{
+                        flex: 1,
+                        padding: "20px 24px",
+                        overflowY: "auto",
+                        WebkitOverflowScrolling: "touch"
+                    }}
                 >
                     {error && (
                         <div
