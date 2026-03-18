@@ -460,7 +460,7 @@ export const Dashboard: React.FC = () => {
                             style={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(2, 1fr)",
-                                gap: "12px",
+                                gap: isMobile ? "8px" : "12px",
                                 width: "100%",
                             }}
                         >
@@ -475,16 +475,16 @@ export const Dashboard: React.FC = () => {
                                         flexDirection: "column",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        padding: "16px",
+                                        padding: isMobile ? "8px" : "16px",
                                         background: "var(--surface)",
                                         border: "1px solid var(--border)",
-                                        borderRadius: "12px",
+                                        borderRadius: "10px",
                                         cursor: "pointer",
                                         transition: "all 0.2s",
-                                        fontSize: "13px",
+                                        fontSize: isMobile ? "11px" : "13px",
                                         fontWeight: 600,
                                         color: "var(--ink)",
-                                        gap: "8px",
+                                        gap: isMobile ? "4px" : "8px",
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.borderColor =
@@ -499,7 +499,11 @@ export const Dashboard: React.FC = () => {
                                             "var(--surface)";
                                     }}
                                 >
-                                    <span style={{ fontSize: "24px" }}>
+                                    <span
+                                        style={{
+                                            fontSize: isMobile ? "18px" : "24px",
+                                        }}
+                                    >
                                         {action.icon}
                                     </span>
                                     {action.label}

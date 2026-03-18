@@ -62,6 +62,10 @@ export const NewsFeed: React.FC = () => {
     const [tag, setTag] = useState("");
     const [search, setSearch] = useState("");
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const articlesPerPage = 10;
+
     // Bookmarks state
     const [bookmarkedArticles, setBookmarkedArticles] = useState<Set<number>>(
         new Set(),
@@ -175,6 +179,11 @@ export const NewsFeed: React.FC = () => {
         },
         [region, tag, search],
     );
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, region, tag]);
 
     // Handle bookmark toggle
     const handleBookmark = async (e: React.MouseEvent, articleId: number) => {
@@ -618,7 +627,12 @@ export const NewsFeed: React.FC = () => {
                                 gap: 12,
                             }}
                         >
-                            {articles.map((article) => {
+                            {articles
+                                .slice(
+                                    (currentPage - 1) * articlesPerPage,
+                                    currentPage * articlesPerPage,
+                                )
+                                .map((article) => {
                                 const isBookmarked = bookmarkedArticles.has(
                                     article.id,
                                 );
@@ -780,6 +794,53 @@ export const NewsFeed: React.FC = () => {
                                 );
                             })}
                         </div>
+
+                        {/* Pagination */}
+                        {articles.length > articlesPerPage && (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "6px",
+                                    padding: "16px",
+                                    flexWrap: "wrap",
+                                }}
+                            >
+                                {Array.from(
+                                    {
+                                        length: Math.ceil(
+                                            articles.length / articlesPerPage,
+                                        ),
+                                    },
+                                    (_, i) => i + 1,
+                                ).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "8px",
+                                            border: "1px solid var(--border)",
+                                            background:
+                                                currentPage === page
+                                                    ? "#c8401a"
+                                                    : "var(--surface)",
+                                            color:
+                                                currentPage === page
+                                                    ? "white"
+                                                    : "var(--ink)",
+                                            cursor: "pointer",
+                                            fontWeight:
+                                                currentPage === page ? 700 : 400,
+                                            fontSize: "13px",
+                                        }}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     )}
                 </div>
 
