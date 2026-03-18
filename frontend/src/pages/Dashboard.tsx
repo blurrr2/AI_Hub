@@ -62,8 +62,6 @@ export const Dashboard: React.FC = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem("token");
-                console.log('Dashboard - Token from localStorage:', token ? 'exists' : 'missing');
-                console.log('Dashboard - Token value:', token);
 
                 // Fetch stats
                 const statsResponse = await axios.get("/api/dashboard/stats", {

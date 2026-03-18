@@ -9,8 +9,6 @@ axios.defaults.baseURL = API_BASE_URL;
 
 axios.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
-    console.log('Axios interceptor - Token:', token ? 'exists' : 'missing');
-    console.log('Axios interceptor - URL:', config.url);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
