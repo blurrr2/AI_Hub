@@ -33,6 +33,16 @@ export default function Community() {
     const [loading, setLoading] = useState(true);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState("");
+    const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchEntries = async () => {
@@ -140,7 +150,60 @@ export default function Community() {
                 </div>
 
                 <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-                    <div style={{ width: "320px", borderRight: "1px solid var(--border)", overflowY: "auto" }}>
+                    {/* Mobile Tab Bar */}
+                    {isMobile && (
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            padding: '12px 16px',
+                            background: 'var(--surface)',
+                            borderBottom: '1px solid var(--border)'
+                        }}>
+                            <button
+                                onClick={() => setMobileView('list')}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '6px',
+                                    background: mobileView === 'list' ? '#c8401a' : 'var(--bg)',
+                                    color: mobileView === 'list' ? 'white' : 'var(--ink2)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                List
+                            </button>
+                            <button
+                                onClick={() => setMobileView('detail')}
+                                disabled={!selectedId}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 12px',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '6px',
+                                    background: mobileView === 'detail' ? '#c8401a' : 'var(--bg)',
+                                    color: mobileView === 'detail' ? 'white' : 'var(--ink2)',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    opacity: !selectedId ? 0.5 : 1
+                                }}
+                            >
+                                Detail
+                            </button>
+                        </div>
+                    )}
+
+                    <div style={{
+                        width: "320px",
+                        borderRight: "1px solid var(--border)",
+                        overflowY: "auto",
+                        display: !isMobile || mobileView === 'list' ? 'block' : 'none'
+                    }}>
                         {loading ? (
                             <div style={{ padding: "20px", textAlign: "center", color: "var(--ink2)" }}>Loading...</div>
                         ) : entries.length === 0 ? (
@@ -170,7 +233,12 @@ export default function Community() {
                         )}
                     </div>
 
-                    <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+                    <div style={{
+                        flex: 1,
+                        overflowY: "auto",
+                        padding: "24px",
+                        display: !isMobile || mobileView === 'detail' ? 'block' : 'none'
+                    }}>
                         {selected ? (
                             <>
                                 <div style={{ marginBottom: "24px" }}>

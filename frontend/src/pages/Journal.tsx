@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 import { useEffect, useState } from "react";
 import { buildApiUrl } from "../api/config";
+import styles from "./Journal.module.css";
 
 interface Problem {
     id: string;
@@ -31,6 +32,16 @@ export default function Journal() {
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string | null>(null);
+    const [mobileView, setMobileView] = useState<'list' | 'editor'>('list');
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -306,8 +317,29 @@ export default function Journal() {
 
                 {/* SPLIT BODY */}
                 <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+                    {/* Mobile Tab Bar */}
+                    {isMobile && (
+                        <div className={styles.mobileTabBar}>
+                            <button
+                                className={`${styles.mobileTabBtn} ${mobileView === 'list' ? styles.activeMobileTab : ''}`}
+                                onClick={() => setMobileView('list')}
+                            >
+                                Entries
+                            </button>
+                            <button
+                                className={`${styles.mobileTabBtn} ${mobileView === 'editor' ? styles.activeMobileTab : ''}`}
+                                onClick={() => setMobileView('editor')}
+                                disabled={!selectedId}
+                                style={!selectedId ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
+                            >
+                                Editor
+                            </button>
+                        </div>
+                    )}
+
                     {/* LEFT: Entry List Panel - 300px */}
                     <div
+                        className={`${styles.entryList} ${!isMobile || mobileView === 'list' ? styles.mobileVisible : ''}`}
                         style={{
                             width: "300px",
                             flex: "0 0 300px",
@@ -445,6 +477,7 @@ export default function Journal() {
 
                     {/* RIGHT: Editor Area - flex:1 */}
                     <div
+                        className={`${styles.editor} ${!isMobile || mobileView === 'editor' ? styles.mobileVisible : ''}`}
                         style={{
                             flex: 1,
                             background: "var(--bg)",

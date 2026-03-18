@@ -473,6 +473,7 @@ export const Dashboard: React.FC = () => {
                             Quick Actions
                         </div>
                         <div
+                            className="quick-actions-grid"
                             style={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(2, 1fr)",

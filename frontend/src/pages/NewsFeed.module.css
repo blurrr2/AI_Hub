@@ -8,3 +8,22 @@
         opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .articleGrid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .tabBar {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .tagPills {
+        width: 100% !important;
+        margin-left: 0 !important;
+        justify-content: flex-start !important;
+    }
+}
