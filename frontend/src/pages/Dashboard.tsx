@@ -329,7 +329,7 @@ export const Dashboard: React.FC = () => {
                         gridTemplateColumns: isMobile ? "1fr" : "1.5fr 1fr",
                         gap: 16,
                         padding: 20,
-                        overflow: "hidden",
+                        overflow: isMobile ? "auto" : "hidden",
                     }}
                 >
                     {/* Recent Activity list - scrollable */}
