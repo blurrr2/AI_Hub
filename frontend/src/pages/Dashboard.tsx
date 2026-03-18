@@ -475,10 +475,12 @@ export const Dashboard: React.FC = () => {
                         <div
                             className="quick-actions-grid"
                             style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(2, 1fr)",
+                                display: "flex",
+                                overflowX: "auto",
                                 gap: 12,
-                                flex: 1,
+                                paddingBottom: "8px",
+                                scrollbarWidth: "none",
+                                WebkitOverflowScrolling: "touch",
                             }}
                         >
                             {quickActions.map((action, idx) => (
@@ -501,6 +503,8 @@ export const Dashboard: React.FC = () => {
                                         fontSize: "12px",
                                         fontWeight: 600,
                                         color: "var(--ink)",
+                                        minWidth: "120px",
+                                        flexShrink: 0,
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.borderColor =

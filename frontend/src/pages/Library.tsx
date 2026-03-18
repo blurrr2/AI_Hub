@@ -37,16 +37,6 @@ interface Filters {
 const Library: React.FC = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const [mobileView, setMobileView] = useState<'filters' | 'cards' | 'detail'>('cards');
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -542,34 +532,8 @@ const Library: React.FC = () => {
 
                 {/* Body: 3 Columns */}
                 <div className={styles.body}>
-                    {/* Mobile Tab Bar */}
-                    {isMobile && (
-                        <div className={styles.mobileTabBar}>
-                            <button
-                                className={`${styles.mobileTabBtn} ${mobileView === 'filters' ? styles.activeMobileTab : ''}`}
-                                onClick={() => setMobileView('filters')}
-                            >
-                                Filters
-                            </button>
-                            <button
-                                className={`${styles.mobileTabBtn} ${mobileView === 'cards' ? styles.activeMobileTab : ''}`}
-                                onClick={() => setMobileView('cards')}
-                            >
-                                Cards
-                            </button>
-                            <button
-                                className={`${styles.mobileTabBtn} ${mobileView === 'detail' ? styles.activeMobileTab : ''}`}
-                                onClick={() => setMobileView('detail')}
-                                disabled={!selected}
-                                style={!selected ? {opacity: 0.5, cursor: 'not-allowed'} : {}}
-                            >
-                                Detail
-                            </button>
-                        </div>
-                    )}
-
                     {/* LEFT: Filter Panel */}
-                    <div className={`${styles.filterPanel} ${!isMobile || mobileView === 'filters' ? styles.mobileVisible : ''}`}>
+                    <div className={styles.filterPanel}>
                         <div className={styles.filterGroup}>
                             <h3>Category</h3>
                             {[
@@ -734,7 +698,7 @@ const Library: React.FC = () => {
                     </div>
 
                     {/* CENTER: Cards Panel */}
-                    <div className={`${styles.cardsPanel} ${!isMobile || mobileView === 'cards' ? styles.mobileVisible : ''}`}>
+                    <div className={styles.cardsPanel}>
                         {loading ? (
                             <div className={styles.empty}>Loading...</div>
                         ) : filtered.length === 0 ? (
@@ -854,7 +818,7 @@ const Library: React.FC = () => {
                     </div>
 
                     {/* RIGHT: Detail Panel */}
-                    <div className={`${styles.detailPanel} ${!isMobile || mobileView === 'detail' ? styles.mobileVisible : ''}`}>
+                    <div className={styles.detailPanel}>
                         {!selected ? (
                             <div className={styles.empty}>
                                  Select a resource

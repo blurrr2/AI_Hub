@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+/* Responsive font sizes */
+html {
+    font-size: clamp(12px, 1.5vw, 16px);
+}
+
 :root,
 html.light {
     --bg: #f7f5f0;
@@ -141,20 +146,35 @@ select:focus {
 }
 
 /* Mobile Responsive Styles */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
     .sidebar {
-        display: none;
+        width: 60px !important;
+        min-width: 60px !important;
     }
 
-    .main-content {
-        margin-left: 0 !important;
-        padding: 16px !important;
+    .sidebar-label {
+        display: none;
     }
 
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
+}
 
+/* Main content fills remaining space */
+.main-content {
+    flex: 1;
+    overflow: auto;
+    min-width: 0;
+}
+
+/* Hide scrollbar for Quick Actions */
+.quick-actions-grid::-webkit-scrollbar {
+    display: none;
+}
+
+/* Cards and grids wrap on small screens */
+@media (max-width: 600px) {
     .news-card,
     .library-card,
     .resource-card {
@@ -162,6 +182,6 @@ select:focus {
     }
 
     body {
-        padding-bottom: 70px;
+        padding-bottom: 0;
     }
 }
