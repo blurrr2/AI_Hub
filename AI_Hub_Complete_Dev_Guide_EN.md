@@ -9,11 +9,11 @@
 2. [Chapter 1: Project Structure](#chapter-1-create-project-structure)
 3. [Chapter 2: Database Design](#chapter-2-database-design-prisma-schema)
 4. [Chapter 3: Backend Development](#chapter-3-backend-development-nodejs--express)
-5. [Chapter 4: Dark/Light Theme Toggle](#chapter-4-darklight-theme-toggle)
-6. [Chapter 5: How to Use Claude Code](#chapter-5-how-to-use-claude-code)
-7. [Chapter 6: 8-Week Development Plan](#chapter-6-8-week-development-plan)
-8. [Chapter 7: Deployment (Free!)](#chapter-7-deployment-free)
-9. [Chapter 8: Writing the README](#chapter-8-writing-the-readmemd)
+5. [Chapter 4: Frontend Development](#chapter-4-frontend-development-react--typescript)
+6. [Chapter 5: Dark/Light Theme Toggle](#chapter-5-darklight-theme-toggle)
+7. [Chapter 6: PWA Setup](#chapter-6-pwa-setup)
+8. [Chapter 7: Deployment](#chapter-7-deployment)
+9. [Chapter 8: Troubleshooting](#chapter-8-troubleshooting)
 10. [Chapter 9: Interview Talking Points](#chapter-9-interview-talking-points)
 
 ---
@@ -64,8 +64,8 @@ The project is split into two independent parts: `frontend` (React) and `backend
 ### 1.1 Create Project Folders
 
 ```bash
-mkdir ai-hub
-cd ai-hub
+mkdir AI_Hub
+cd AI_Hub
 mkdir frontend backend
 ```
 
@@ -76,7 +76,7 @@ cd backend
 npm init -y
 
 # Install all backend dependencies at once
-npm install express cors dotenv jsonwebtoken bcrypt
+npm install express cors dotenv jsonwebtoken bcrypt resend
 npm install prisma @prisma/client rss-parser node-cron axios cheerio
 
 # Install dev tools (nodemon = auto-restart server on file changes)
@@ -98,37 +98,36 @@ npm create vite@latest . -- --template react-ts
 npm install
 
 # Install frontend dependencies
-npm install react-router-dom axios zustand
-npm install react-syntax-highlighter react-calendar-heatmap
+npm install react-router-dom axios
 
-# Install Tailwind CSS
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+# Install dev dependencies
+npm install -D gh-pages
 ```
 
 ### 1.4 Final Folder Structure
 
 ```
-ai-hub/
+AI_Hub/
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     ← Reusable UI components (buttons, cards, etc.)
-│   │   ├── pages/          ← Page components (Dashboard, News, Library...)
-│   │   ├── hooks/          ← Custom React Hooks
-│   │   ├── api/            ← All API call functions
-│   │   ├── store/          ← Zustand global state
+│   │   ├── components/     ← Reusable UI components (Sidebar, BottomNav, etc.)
+│   │   ├── pages/          ← Page components (Dashboard, News, Library, Journal, Community, Profile)
+│   │   ├── hooks/          ← Custom React Hooks (useIsMobile)
 │   │   ├── context/        ← Theme Context (theme switching)
 │   │   └── App.tsx         ← Root component, routing lives here
+│   ├── public/
+│   │   ├── manifest.json   ← PWA manifest
+│   │   └── sw.js           ← Service worker
 │   └── index.html
 ├── backend/
 │   ├── src/
-│   │   ├── routes/         ← API routes (/api/news, /api/resources...)
-│   │   ├── controllers/    ← Business logic
-│   │   ├── middleware/     ← JWT verification, error handling
+│   │   ├── routes/         ← API routes (/api/news, /api/resources, /api/user...)
+│   │   ├── middleware/     ← JWT verification (authenticateToken)
 │   │   ├── services/       ← RSS fetching, cron jobs
 │   │   └── app.js          ← Express entry point
 │   ├── prisma/
-│   │   └── schema.prisma   ← Database schema definition
+│   │   ├── schema.prisma   ← Database schema definition
+│   │   └── migrations/     ← Database migration history
 │   └── .env                ← Secrets (never upload to GitHub!)
 ├── .gitignore
 └── README.md
@@ -156,22 +155,38 @@ model User {
   email      String           @unique
   username   String           @unique
   password   String
+  avatar     String?
   createdAt  DateTime         @default(now())
   resources  Resource[]
   problems   CodingProblem[]
   activities UserActivity[]
+  bookmarks  Bookmark[]
+  comments   Comment[]
+  likes      Like[]
 }
 
 // News articles table
 model NewsArticle {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   title       String
-  url         String   @unique
+  url         String     @unique
   source      String
-  category    String
-  region      String   @default("world")
+  tags        String[]
   publishedAt DateTime
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
+  bookmarks   Bookmark[]
+}
+
+// Bookmarks table
+model Bookmark {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  articleId Int
+  user      User         @relation(fields: [userId], references: [id])
+  article   NewsArticle  @relation(fields: [articleId], references: [id])
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, articleId])
 }
 
 // Learning resources table
@@ -183,385 +198,524 @@ model Resource {
   url        String
   type       String
   category   String
-  language   String   @default("EN")
-  rating     Int      @default(0)
-  progress   Int      @default(0)
-  reason     String?
-  visibility String   @default("private")
+  difficulty String   @default("beginner")
+  progress   String   @default("not_started")
+  notes      String?
   createdAt  DateTime @default(now())
 }
 
 // Coding Journal entries table
 model CodingProblem {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  problem     String?
+  solution    String?
+  learned     String?
+  difficulty  String    @default("medium")
+  status      String    @default("in_progress")
+  visibility  String    @default("private")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  comments    Comment[]
+  likes       Like[]
+}
+
+// Comments table
+model Comment {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  problemId Int
+  content   String
+  user      User          @relation(fields: [userId], references: [id])
+  problem   CodingProblem @relation(fields: [problemId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+// Likes table
+model Like {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  problemId Int
+  user      User          @relation(fields: [userId], references: [id])
+  problem   CodingProblem @relation(fields: [problemId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, problemId])
+}
+
+// User activity tracking table
+model UserActivity {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   type      String
-  title     String
-  language  String
-  tag       String
-  status    String   @default("open")
-  problem   String?
-  solution  String?
-  learned   String?
-  createdAt DateTime @default(now())
+  date      DateTime @default(now())
 }
 
-// Daily activity log (for heatmap)
-model UserActivity {
-  id     Int      @id @default(autoincrement())
-  userId Int
-  user   User     @relation(fields: [userId], references: [id])
-  date   DateTime @default(now())
-  type   String
-  count  Int      @default(1)
-  @@unique([userId, date, type])
+// Password reset tokens table
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 ```
 
-### Run Database Migration
+### Run Database Migrations
 
 ```bash
-# First set database connection in .env:
-# DATABASE_URL="postgresql://username:password@localhost:5432/aihub"
-
 cd backend
 npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-> ✅ You'll see `Generated Prisma Client` on success. All database tables are created automatically.
-
 ---
 
 ## Chapter 3: Backend Development (Node.js + Express)
 
-### 3.1 Create Entry File
+### 3.1 Environment Variables
 
+Create `backend/.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/aihub"
+JWT_SECRET="your-super-secret-jwt-key-change-this"
+RESEND_API_KEY="re_your_resend_api_key"
+PORT=3000
+```
+
+### 3.2 Backend Structure
+
+```
+backend/src/
+├── routes/
+│   ├── auth.js          ← Login, register, password reset
+│   ├── news.js          ← News feed, bookmarks, sync
+│   ├── resources.js     ← Learning library CRUD
+│   ├── problems.js      ← Coding journal CRUD
+│   ├── community.js     ← Public entries, comments, likes
+│   ├── user.js          ← User profile, avatar, username
+│   └── dashboard.js     ← Activity stats
+├── middleware/
+│   └── auth.js          ← JWT authentication middleware
+├── services/
+│   └── newsSync.js      ← RSS feed fetching with node-cron
+└── app.js               ← Express server entry point
+```
+
+### 3.3 Key Backend Features
+
+**Authentication (JWT + bcrypt)**
+- Register: Hash password with bcrypt, create user, return JWT token
+- Login: Verify password, return JWT token
+- Password Reset: Generate token, send email via Resend API
+
+**News Sync Service**
+- Uses `rss-parser` to fetch from OpenAI, Hugging Face, DeepMind, heise.de, t3n.de
+- Runs every 6 hours via `node-cron`
+- Stores articles in PostgreSQL, prevents duplicates with unique URL constraint
+
+**CORS Configuration**
 ```javascript
-// backend/src/app.js
-const express = require('express');
-const cors    = require('cors');
-require('dotenv').config();
-
-const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
-app.use(express.json());
-
-// Routes
-app.use('/api/auth',      require('./routes/auth'));
-app.use('/api/news',      require('./routes/news'));
-app.use('/api/resources', require('./routes/resources'));
-app.use('/api/problems',  require('./routes/problems'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-
-app.listen(3001, () => console.log('Server running on :3001'));
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://blurrr2.github.io'],
+  credentials: true
+}));
 ```
 
-### 3.2 Use Claude Code to Generate Routes (Key Step!)
+**Middleware: authenticateToken**
+```javascript
+export const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Access token required' });
 
-Open terminal in the backend folder, type `claude`, then tell it what you need:
-
-```
-"Write src/routes/auth.js with POST /register and POST /login routes.
- Use bcrypt to hash passwords, JWT to generate tokens, connect to Prisma database."
-```
-
-> 💡 Claude Code creates the files directly in your folder — no copy-pasting needed!
-
-### 3.3 RSS News Auto-Fetching
-
-```
-"Write an RSS news auto-fetch service. Run every 2 hours, fetch from:
- OpenAI Blog, HuggingFace, DeepMind, Heise Online, t3n.de.
- Use node-cron for scheduling, rss-parser to parse feeds,
- save to Prisma database, skip URLs that already exist."
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
 ```
 
-### 3.4 Start the Backend Server
-
-```json
-// Add to backend/package.json scripts:
-{
-  "scripts": {
-    "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
-  }
-}
-```
+### 3.4 Start Backend
 
 ```bash
+cd backend
 npm run dev
-# "Server running on :3001" means it's working!
 ```
+
+Backend runs on `http://localhost:3000`
 
 ---
 
-## Chapter 4: Dark/Light Theme Toggle
+## Chapter 4: Frontend Development (React + TypeScript)
 
-Using React Context + CSS Variables. Switching themes only requires changing one class on `<html>`.
+### 4.1 Frontend Structure
 
-### 4.1 Create Theme Context
+```
+frontend/src/
+├── components/
+│   ├── Sidebar.tsx           ← Desktop navigation
+│   ├── BottomNav.tsx         ← Mobile navigation
+│   ├── MobileHeader.tsx      ← Mobile top bar
+│   └── ResizableDivider.tsx  ← Resizable split pane
+├── pages/
+│   ├── Dashboard.tsx         ← Activity stats, quick actions
+│   ├── NewsFeed.tsx          ← News articles, search, filter, bookmark
+│   ├── Library.tsx           ← Learning resources CRUD
+│   ├── Journal.tsx           ← Coding problems with tabs
+│   ├── Community.tsx         ← Public entries, comments, likes
+│   ├── Profile.tsx           ← User profile, avatar upload
+│   ├── Login.tsx             ← Login form
+│   ├── Register.tsx          ← Register form
+│   ├── ForgotPassword.tsx    ← Password reset request
+│   └── ResetPassword.tsx     ← Password reset form
+├── hooks/
+│   └── useIsMobile.tsx       ← Detect mobile viewport
+├── context/
+│   └── ThemeContext.tsx      ← Dark/light theme state
+└── App.tsx                   ← Routes, theme provider
+```
 
-```typescript
-// frontend/src/context/ThemeContext.tsx
+### 4.2 Key Frontend Features
+
+**Responsive Design**
+- Desktop: Sidebar navigation
+- Mobile: Bottom navigation + top header
+- `useIsMobile` hook detects viewport width < 768px
+
+**Theme System**
+- CSS variables in `index.css` for colors
+- ThemeContext provides `theme` and `toggleTheme`
+- Persists to localStorage
+
+**API Integration**
+- All API calls use axios with JWT token in Authorization header
+- Base URL switches between localhost (dev) and Render (production)
+
+**PWA Features**
+- Service worker caches assets for offline use
+- Manifest.json for installability
+- Network-first strategy for API calls
+
+### 4.3 Start Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Frontend runs on `http://localhost:5173`
+
+---
+
+## Chapter 5: Dark/Light Theme Toggle
+
+### 5.1 CSS Variables (`frontend/src/index.css`)
+
+```css
+:root {
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --surface2: #e9ecef;
+  --border: #dee2e6;
+  --ink: #212529;
+  --ink2: #495057;
+  --ink3: #6c757d;
+}
+
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --surface: #242424;
+  --surface2: #2d2d2d;
+  --border: #3a3a3a;
+  --ink: #e9ecef;
+  --ink2: #adb5bd;
+  --ink3: #6c757d;
+}
+```
+
+### 5.2 Theme Context (`frontend/src/context/ThemeContext.tsx`)
+
+```tsx
 import { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark';
-
 const ThemeContext = createContext<{
-  theme: Theme;
+  theme: string;
   toggleTheme: () => void;
 }>({ theme: 'light', toggleTheme: () => {} });
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Remember user's last preference
-    return (localStorage.getItem('theme') as Theme) || 'light';
-  });
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const [theme, setTheme] = useState(
+    localStorage.getItem('theme') || 'light'
+  );
 
   useEffect(() => {
-    // Add class to <html> tag to control all colors globally
-    document.documentElement.className = theme;
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () =>
-    setTheme(t => t === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
-}
+};
 
-// Use in any component like this:
 export const useTheme = () => useContext(ThemeContext);
 ```
 
-### 4.2 CSS Variables (Light + Dark)
+### 5.3 Usage in Components
 
-```css
-/* frontend/src/index.css */
-
-/* Light theme (default) */
-:root, html.light {
-  --bg:       #f7f5f0;
-  --surface:  #ffffff;
-  --surface2: #f0ece4;
-  --border:   #e2ddd6;
-  --ink:      #1a1612;
-  --ink2:     #4a4540;
-  --ink3:     #8a847e;
-  --accent:   #c8401a;
-  --sidebar:  #0f1117;
-}
-
-/* Dark theme */
-html.dark {
-  --bg:       #0d1117;
-  --surface:  #161b27;
-  --surface2: #1e2535;
-  --border:   #2a3045;
-  --ink:      #e2e8f0;
-  --ink2:     #94a3b8;
-  --ink3:     #64748b;
-  --accent:   #f87171;
-  --sidebar:  #0a0e1a;
-}
-
-/* All components use variables — never hardcode colors */
-.card { background: var(--surface); border: 1px solid var(--border); }
-.page { background: var(--bg); color: var(--ink); }
-```
-
-### 4.3 Theme Toggle Button Component
-
-```typescript
-// frontend/src/components/ThemeToggle.tsx
+```tsx
 import { useTheme } from '../context/ThemeContext';
 
-export function ThemeToggle() {
+function Sidebar() {
   const { theme, toggleTheme } = useTheme();
+
   return (
-    <button onClick={toggleTheme}
-      style={{
-        background: 'var(--surface2)',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        padding: '6px 12px',
-        cursor: 'pointer',
-        color: 'var(--ink)',
-        fontSize: 14
-      }}>
-      {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+    <button onClick={toggleTheme}>
+      {theme === 'light' ? '🌙' : '☀️'}
     </button>
   );
 }
 ```
 
-### 4.4 Wrap App.tsx with ThemeProvider
+---
 
-```typescript
-// frontend/src/App.tsx
-import { ThemeProvider } from './context/ThemeContext';
-import { ThemeToggle } from './components/ThemeToggle';
+## Chapter 6: PWA Setup
 
-function App() {
-  return (
-    <ThemeProvider>
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        <ThemeToggle />
-        {/* Other page content */}
-      </div>
-    </ThemeProvider>
-  );
+### 6.1 Manifest (`frontend/public/manifest.json`)
+
+```json
+{
+  "name": "AI Hub",
+  "short_name": "AI Hub",
+  "description": "AI News & Learning Dashboard",
+  "start_url": "/AI_Hub/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c8401a",
+  "icons": [
+    {
+      "src": "/AI_Hub/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/AI_Hub/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
 ```
 
-> 💡 Theme persists on page refresh because localStorage saves the user's choice.
+### 6.2 Service Worker (`frontend/public/sw.js`)
+
+```javascript
+const CACHE_NAME = 'ai-hub-v1';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        '/AI_Hub/',
+        '/AI_Hub/index.html',
+        '/AI_Hub/manifest.json'
+      ]);
+    })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // Network-first strategy for API calls
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cache-first for static assets
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request);
+      })
+    );
+  }
+});
+```
+
+### 6.3 Register Service Worker (`frontend/index.html`)
+
+```html
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/AI_Hub/sw.js');
+  }
+</script>
+```
 
 ---
 
-## Chapter 5: How to Use Claude Code
+## Chapter 7: Deployment
 
-### 5.1 Daily Development Workflow
+### 7.1 Backend Deployment (Render.com)
 
-| Step | What You Do | How |
-|------|-------------|-----|
-| 1. Open project | Open ai-hub folder in VS Code | File → Open Folder |
-| 2. Start backend | Run backend server in terminal | `cd backend → npm run dev` |
-| 3. Start frontend | Run frontend in another terminal | `cd frontend → npm run dev` |
-| 4. Start Claude Code | Type claude in terminal | `cd ai-hub → claude` |
-| 5. Build features | Tell Claude Code what to build | See prompt templates below |
-| 6. Test | Test APIs with Thunder Client | Open in VS Code sidebar |
-| 7. Save progress | Commit with Git | `git add . → git commit -m 'feat: xxx'` |
+1. Push code to GitHub
+2. Go to render.com → New Web Service
+3. Connect GitHub repo
+4. Configure:
+   - **Build Command:** `cd backend && npm install && npx prisma generate`
+   - **Start Command:** `cd backend && node src/app.js`
+   - **Environment Variables:** Add DATABASE_URL, JWT_SECRET, RESEND_API_KEY
 
-### 5.2 Prompt Templates for Claude Code
+5. Create PostgreSQL database on Render
+6. Copy database URL to environment variables
 
-**Writing a new feature:**
-```
-"In backend/src/routes/resources.js, write a GET /api/resources route.
- Requires JWT authentication, returns all resources for the logged-in user,
- supports ?category=Python filtering."
-```
+### 7.2 Frontend Deployment (GitHub Pages)
 
-**Fixing a bug:**
-```
-"I got this error running npm run dev: [paste error message].
- Here's the file causing it: [paste code]. Please find the cause and fix it."
+**Update `frontend/vite.config.ts`:**
+```typescript
+export default defineConfig({
+  base: '/AI_Hub/',
+  plugins: [react()]
+});
 ```
 
-**Writing a React component:**
-```
-"In frontend/src/pages/Dashboard.tsx, create the Dashboard page.
- Include: 5 stat cards (fetching data from GET /api/dashboard/stats),
- and an activity feed list.
- Use CSS variables for all colors to support dark/light theme."
-```
-
-**Adding theme support to existing component:**
-```
-"In frontend/src/pages/Library.tsx, replace all hardcoded colors
- (like #f7f5f0, #ffffff) with CSS variables (var(--bg), var(--surface), etc.)
- so it supports dark/light theme switching."
+**Update `frontend/package.json`:**
+```json
+{
+  "homepage": "https://blurrr2.github.io/AI_Hub",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
 ```
 
-> ⚠️ Never ask Claude Code to write your `.env` file contents! Fill in secrets manually and never push them to GitHub.
+**Deploy:**
+```bash
+cd frontend
+npm run deploy
+```
 
----
-
-## Chapter 6: 8-Week Development Plan
-
-| Phase | Timeline | Tasks | Done When |
-|-------|----------|-------|-----------|
-| Phase 1: Auth | Week 1 | Install tools, create structure, database setup, Register/Login API, frontend login page | Register/login works, JWT token functions correctly |
-| Phase 2: News Feed | Weeks 2-3 | RSS fetching, cron jobs, news API, news page UI, 🇩🇪 German sources | News auto-updates, page filters by category |
-| Phase 3: Learning Library | Weeks 4-5 | Resource CRUD API, resource cards, URL auto-detection, tag filtering, progress tracking | Can add/delete/update resources, progress saves |
-| Phase 4: Coding Journal | Week 6 | Journal CRUD API, split view editor, language selector, syntax highlighting, tag grouping | Can create bug entries, split view works |
-| Phase 5: Dashboard + Theme | Week 7 | Stats API, activity heatmap, charts, dark/light theme toggle | Theme switches smoothly, dashboard shows real data |
-| Phase 6: Deploy | Week 8 | GitHub repo, Vercel frontend, Render backend, README (EN + DE) | Live link to share with HR |
-
----
-
-## Chapter 7: Deployment (Free!)
-
-### 7.1 Push Code to GitHub
+### 7.3 Database Migrations on Render
 
 ```bash
-cd ai-hub
-git init
-git add .
-git commit -m "initial commit"
+# Set environment variable
+$env:DATABASE_URL="your_render_postgres_url"
 
-# Create a new repo on github.com, then:
-git remote add origin https://github.com/yourusername/ai-hub.git
-git push -u origin main
+# Run migration
+cd backend
+npx prisma migrate deploy
 ```
-
-> ⚠️ Make sure `.gitignore` includes `.env` and `node_modules` before pushing — otherwise your secrets will be public!
-
-### 7.2 Deploy Backend to Render
-
-1. Go to render.com and sign up (use GitHub login)
-2. Click **New → Web Service** → connect your GitHub repo
-3. Root Directory: `backend`
-4. Build Command: `npm install && npx prisma generate`
-5. Start Command: `node src/app.js`
-6. Add Environment Variables: `DATABASE_URL` and `JWT_SECRET`
-7. Click Deploy, wait 2-3 minutes
-
-> 💡 Render gives you a URL like `https://ai-hub-api.onrender.com`. Add this to your frontend as the API base URL.
-
-### 7.3 Deploy Frontend to Vercel
-
-1. Go to vercel.com and sign up (use GitHub login)
-2. Click **New Project** → import your GitHub repo
-3. Root Directory: `frontend`
-4. Add Environment Variable: `VITE_API_URL = your Render URL`
-5. Click Deploy, wait 1 minute
-
-> 💡 You'll get a live link like `https://ai-hub-xxx.vercel.app` — this goes on your resume!
 
 ---
 
-## Chapter 8: Writing the README.md
+## Chapter 8: Troubleshooting
 
-The README is the first thing HR sees when opening your GitHub repository. Write it in both English and German.
+### Common Issues
 
-### What to Include
+**1. CORS Error**
+- Check backend CORS origin includes your frontend URL
+- Verify Authorization header is sent with Bearer token
 
-- 📸 **Screenshots or GIF demo** (most important!)
-- 📝 Short project description (1-2 sentences)
-- 🛠️ Tech stack list (React, Node.js, PostgreSQL...)
-- ✨ Feature list (News Feed, Library, Journal, Dashboard)
-- 🚀 Local setup steps (git clone → npm install → npm run dev)
-- 🔗 Live demo link (Vercel URL)
-- 🌟 Project highlights (German news sources, Chinese resource support, theme toggle)
+**2. 404 on API Routes**
+- Check route is registered in `backend/src/app.js`
+- Verify route path matches frontend API call
 
-### Ask Claude Code to Generate It
+**3. JWT Token Issues**
+- Token field in JWT is `userId`, not `id`
+- Use `req.user.userId` in backend routes
 
-```
-"Write a README.md for this project in both English and German.
- Include: feature overview, tech stack, local setup instructions, screenshot placeholders.
- Project name: AI Hub, built with React + Node.js + PostgreSQL.
- Highlight: supports German news sources (Heise, t3n, DFKI) and Chinese resources (Bilibili)."
-```
+**4. Database Connection Failed**
+- Verify DATABASE_URL format: `postgresql://user:pass@host:port/db`
+- Check PostgreSQL is running
+
+**5. Build Errors**
+- Clear node_modules: `rm -rf node_modules && npm install`
+- Check TypeScript errors: `npm run build`
+
+**6. PWA Not Installing**
+- Manifest must be served over HTTPS
+- Check manifest.json path in index.html
+- Service worker must be in public folder
 
 ---
 
 ## Chapter 9: Interview Talking Points
 
-| Question | Your Answer |
-|----------|-------------|
-| What is this project? | "I built an AI learning tracker that helps developers aggregate AI news, manage learning resources, and log coding problems." |
-| Why did you build it? | "When I was learning AI, resources were scattered across YouTube, blogs, and social media. I wanted one unified place to manage everything." |
-| Tech stack? | "React + TypeScript frontend, Node.js + Express backend, PostgreSQL + Prisma database, deployed on Vercel and Render." |
-| Hardest part? | "Adapting RSS feeds for Chinese content sources. Sites like 机器之心 don't provide standard RSS, so I used RSSHub and cheerio to scrape og:title metadata." |
-| German relevance? | "I specifically integrated German AI news sources — Heise Online, t3n.de, DFKI, and golem.de — making it useful for German students and professionals following the local tech landscape." |
+### Technical Decisions
+
+**Why PostgreSQL over MongoDB?**
+- Relational data (users → resources, problems → comments)
+- ACID transactions for data integrity
+- Better for complex queries with JOINs
+
+**Why Prisma over raw SQL?**
+- Type-safe database queries
+- Auto-generated TypeScript types
+- Easy migrations with `prisma migrate`
+
+**Why JWT over sessions?**
+- Stateless authentication (no server-side session storage)
+- Scalable across multiple servers
+- Works well with mobile apps
+
+**Why Vite over Create React App?**
+- 10-100x faster build times
+- Better dev experience with HMR
+- Smaller bundle sizes
+
+### Architecture Highlights
+
+- **Separation of Concerns:** Frontend and backend are independent
+- **RESTful API:** Clear endpoint structure (/api/resource)
+- **Middleware Pattern:** Reusable authentication logic
+- **Component Reusability:** Sidebar, BottomNav, ResizableDivider
+- **Responsive Design:** Mobile-first with useIsMobile hook
+- **PWA:** Offline-capable, installable
+
+### Features Implemented
+
+1. **Authentication:** JWT-based with password reset via email
+2. **News Aggregation:** RSS parsing with cron jobs
+3. **CRUD Operations:** Resources, problems, comments, likes
+4. **Search & Filter:** News by source/tag, resources by category
+5. **Community:** Public sharing, comments, likes
+6. **User Profile:** Avatar upload (base64), username change
+7. **Theme Toggle:** Dark/light mode with CSS variables
+8. **PWA:** Service worker, manifest, installable
+
+### Challenges Overcome
+
+- **CORS Issues:** Configured backend to accept frontend origin
+- **JWT Field Mismatch:** Fixed `req.user.id` vs `req.user.userId`
+- **Mobile Responsiveness:** Built separate navigation for mobile
+- **Database Migrations:** Learned Prisma migration workflow
+- **Deployment:** Configured Render for backend, GitHub Pages for frontend
 
 ---
 
-*Good luck with your Duales Studium application! 🚀*
-*Take it one phase at a time. Commit to Git after every phase. When stuck, ask Claude Code.*
+## Conclusion
+
+This guide covers the complete development process from setup to deployment. The project demonstrates fullstack skills with modern technologies and best practices suitable for a Duales Studium application.
+
+**Key Takeaways:**
+- Fullstack development with React + Node.js
+- Database design with Prisma ORM
+- RESTful API architecture
+- Authentication with JWT
+- Responsive design with mobile support
+- PWA capabilities
+- Deployment to production (Render + GitHub Pages)
+
+Good luck with your application! 🚀
