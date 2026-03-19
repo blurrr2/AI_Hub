@@ -1,16 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const auth = require('../middleware/auth');
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { authenticateToken } from '../middleware/auth.js';
 
+const router = express.Router();
 const prisma = new PrismaClient();
 
 // GET /api/user/profile - Get current user profile
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: req.user.id },
       select: {
         id: true,
         email: true,
@@ -25,7 +25,7 @@ router.get('/profile', auth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ data: user });
+    res.json(user);
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Failed to get profile' });
@@ -33,12 +33,12 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // PUT /api/user/profile - Update user profile
-router.put('/profile', auth, async (req, res) => {
+router.put('/profile', authenticateToken, async (req, res) => {
   try {
     const { displayName, avatar } = req.body;
 
     const updatedUser = await prisma.user.update({
-      where: { id: req.userId },
+      where: { id: req.user.id },
       data: {
         ...(displayName !== undefined && { displayName }),
         ...(avatar !== undefined && { avatar }),
@@ -53,7 +53,7 @@ router.put('/profile', auth, async (req, res) => {
       },
     });
 
-    res.json({ data: updatedUser });
+    res.json({ message: 'Profile updated', user: updatedUser });
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
@@ -61,7 +61,7 @@ router.put('/profile', auth, async (req, res) => {
 });
 
 // PUT /api/user/password - Change password
-router.put('/password', auth, async (req, res) => {
+router.put('/password', authenticateToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -75,7 +75,7 @@ router.put('/password', auth, async (req, res) => {
 
     // Get user with password
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: req.user.id },
     });
 
     if (!user) {
@@ -93,7 +93,7 @@ router.put('/password', auth, async (req, res) => {
 
     // Update password
     await prisma.user.update({
-      where: { id: req.userId },
+      where: { id: req.user.id },
       data: { password: hashedPassword },
     });
 
@@ -104,4 +104,42 @@ router.put('/password', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+// PUT /api/user/username - Update username
+router.put('/username', authenticateToken, async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ error: 'Username required' });
+    }
+
+    // Check if username is already taken
+    const existing = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (existing && existing.id !== req.user.id) {
+      return res.status(400).json({ error: 'Username already taken' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { username },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayName: true,
+        avatar: true,
+        createdAt: true,
+      },
+    });
+
+    res.json({ message: 'Username updated', user: updatedUser });
+  } catch (error) {
+    console.error('Update username error:', error);
+    res.status(500).json({ error: 'Failed to update username' });
+  }
+});
+
+export default router;

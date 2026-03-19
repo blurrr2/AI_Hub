@@ -7,7 +7,6 @@ import problemsRoutes from "./routes/problems.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import communityRoutes from "./routes/community.js";
 import userRoutes from "./routes/user.js";
-import aiRoutes from "./routes/ai.js";
 
 const app = express();
 
@@ -33,6 +32,5 @@ app.use("/api/problems", problemsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/community", communityRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/ai", aiRoutes);
 
 export default app;
