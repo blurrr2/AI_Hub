@@ -68,7 +68,7 @@ export default function Community() {
         const fetchComments = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch(buildApiUrl(`/api/problems/${selectedId}/comments`), {
+                const response = await fetch(buildApiUrl(`/api/community/${selectedId}/comments`), {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (response.ok && !cancelled) {

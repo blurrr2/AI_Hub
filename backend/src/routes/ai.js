@@ -20,6 +20,7 @@ router.post('/generate', authenticateToken, async (req, res) => {
       })
     });
     const data = await response.json();
+    console.log('AI response:', JSON.stringify(data).slice(0, 200));
     res.json({ text: data.content?.[0]?.text || 'No response' });
   } catch (error) {
     console.error('AI error:', error);
