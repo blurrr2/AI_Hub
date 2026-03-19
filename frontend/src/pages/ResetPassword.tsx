@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import PasswordInput from "../components/PasswordInput";
 
 export const ResetPassword: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -160,23 +161,10 @@ export const ResetPassword: React.FC = () => {
                         >
                             New Password
                         </label>
-                        <input
-                            id="password"
-                            type="password"
+                        <PasswordInput
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter new password"
-                            required
-                            disabled={loading}
-                            style={{
-                                width: "100%",
-                                padding: "10px 12px",
-                                border: "1px solid #e5ddd2",
-                                borderRadius: "6px",
-                                fontSize: "14px",
-                                fontFamily: "Inter, sans-serif",
-                                boxSizing: "border-box",
-                            }}
                         />
                     </div>
 
@@ -194,23 +182,10 @@ export const ResetPassword: React.FC = () => {
                         >
                             Confirm Password
                         </label>
-                        <input
-                            id="confirmPassword"
-                            type="password"
+                        <PasswordInput
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="Confirm new password"
-                            required
-                            disabled={loading}
-                            style={{
-                                width: "100%",
-                                padding: "10px 12px",
-                                border: "1px solid #e5ddd2",
-                                borderRadius: "6px",
-                                fontSize: "14px",
-                                fontFamily: "Inter, sans-serif",
-                                boxSizing: "border-box",
-                            }}
                         />
                     </div>
 

@@ -64,6 +64,14 @@ export default function MobileHeader() {
               {username}
             </div>
             <hr style={{border:'none', borderTop:'1px solid var(--border)', margin:'4px 0'}} />
+            <button onClick={() => { navigate('/profile'); setShowMenu(false); }} style={{
+              width:'100%', padding:'8px 12px', border:'none',
+              background:'transparent', color:'var(--ink)',
+              cursor:'pointer', textAlign:'left', fontSize:'13px',
+              borderRadius:'8px', fontWeight:500
+            }}>
+              Profile
+            </button>
             <button onClick={handleLogout} style={{
               width:'100%', padding:'8px 12px', border:'none',
               background:'transparent', color:'#c8401a',

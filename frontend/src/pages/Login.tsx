@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import PasswordInput from "../components/PasswordInput";
 
 type AuthMode = "login" | "register";
 
@@ -386,23 +387,14 @@ export const Login: React.FC = () => {
                                 >
                                     New Password
                                 </label>
-                                <input
-                                    type="password"
+                                <PasswordInput
                                     value={newPassword}
                                     onChange={(e) =>
                                         setNewPassword(e.target.value)
                                     }
                                     placeholder="Enter new password"
-                                    required
-                                    disabled={forgotLoading}
                                     style={{
-                                        width: "100%",
-                                        padding: "10px 12px",
-                                        border: "1px solid #e5ddd2",
-                                        borderRadius: "6px",
-                                        fontSize: "14px",
-                                        fontFamily: "Inter, sans-serif",
-                                        boxSizing: "border-box",
+                                        marginBottom: "16px",
                                     }}
                                 />
                             </div>
@@ -420,24 +412,12 @@ export const Login: React.FC = () => {
                                 >
                                     Confirm Password
                                 </label>
-                                <input
-                                    type="password"
+                                <PasswordInput
                                     value={confirmPassword}
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
                                     }
                                     placeholder="Confirm new password"
-                                    required
-                                    disabled={forgotLoading}
-                                    style={{
-                                        width: "100%",
-                                        padding: "10px 12px",
-                                        border: "1px solid #e5ddd2",
-                                        borderRadius: "6px",
-                                        fontSize: "14px",
-                                        fontFamily: "Inter, sans-serif",
-                                        boxSizing: "border-box",
-                                    }}
                                 />
                             </div>
 
@@ -697,23 +677,10 @@ export const Login: React.FC = () => {
                         >
                             Password
                         </label>
-                        <input
-                            id="password"
-                            type="password"
+                        <PasswordInput
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter your password"
-                            required
-                            disabled={loading}
-                            style={{
-                                width: "100%",
-                                padding: "12px",
-                                border: "1px solid var(--border)",
-                                borderRadius: "8px",
-                                fontSize: "14px",
-                                fontFamily: "Inter, sans-serif",
-                                boxSizing: "border-box",
-                            }}
                         />
                     </div>
 

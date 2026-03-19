@@ -8,6 +8,7 @@ import { NewsFeed } from "./pages/NewsFeed";
 import Library from "./pages/Library";
 import Journal from "./pages/Journal";
 import Community from "./pages/Community";
+import Profile from "./pages/Profile";
 import BottomNav from "./components/BottomNav";
 import MobileHeader from "./components/MobileHeader";
 import "./App.css";
@@ -91,6 +92,16 @@ function App() {
                             <ProtectedRoute>
                                 <ProtectedLayout>
                                     <Community />
+                                </ProtectedLayout>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile"
+                        element={
+                            <ProtectedRoute>
+                                <ProtectedLayout>
+                                    <Profile />
                                 </ProtectedLayout>
                             </ProtectedRoute>
                         }

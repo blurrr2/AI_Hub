@@ -17,6 +17,8 @@ model User {
   password  String
   resetToken String?
   resetTokenExpiry DateTime?
+  avatar      String?
+  displayName String?
   createdAt DateTime @default(now())
 
   // Relations

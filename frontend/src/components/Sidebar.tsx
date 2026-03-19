@@ -135,11 +135,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ user = {}, onLogout }) => {
                     <ThemeToggle />
                 </div>
                 <div
+                    onClick={() => navigate('/profile')}
                     style={{
                         display: "flex",
                         gap: "8px",
                         alignItems: "center",
                         marginBottom: "12px",
+                        cursor: "pointer",
+                        padding: "4px",
+                        borderRadius: "6px",
+                        transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = isDark ? "#131820" : "#f9f5f0";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
                     }}
                 >
                     <div
