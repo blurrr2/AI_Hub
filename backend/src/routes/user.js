@@ -9,8 +9,14 @@ const prisma = new PrismaClient();
 // GET /api/user/profile - Get current user profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
+    console.log('req.user:', req.user); // debug log
+    const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not found in token' });
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -36,9 +42,10 @@ router.get('/profile', authenticateToken, async (req, res) => {
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
     const { displayName, avatar } = req.body;
+    const userId = req.user?.userId || req.user?.id;
 
     const updatedUser = await prisma.user.update({
-      where: { id: req.user.id },
+      where: { id: userId },
       data: {
         ...(displayName !== undefined && { displayName }),
         ...(avatar !== undefined && { avatar }),
@@ -64,6 +71,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
 router.put('/password', authenticateToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.userId || req.user?.id;
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Current and new password required' });
@@ -75,7 +83,7 @@ router.put('/password', authenticateToken, async (req, res) => {
 
     // Get user with password
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+      where: { id: userId },
     });
 
     if (!user) {
@@ -93,7 +101,7 @@ router.put('/password', authenticateToken, async (req, res) => {
 
     // Update password
     await prisma.user.update({
-      where: { id: req.user.id },
+      where: { id: userId },
       data: { password: hashedPassword },
     });
 
@@ -108,6 +116,7 @@ router.put('/password', authenticateToken, async (req, res) => {
 router.put('/username', authenticateToken, async (req, res) => {
   try {
     const { username } = req.body;
+    const userId = req.user?.userId || req.user?.id;
 
     if (!username) {
       return res.status(400).json({ error: 'Username required' });
@@ -118,12 +127,12 @@ router.put('/username', authenticateToken, async (req, res) => {
       where: { username },
     });
 
-    if (existing && existing.id !== req.user.id) {
+    if (existing && existing.id !== userId) {
       return res.status(400).json({ error: 'Username already taken' });
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: req.user.id },
+      where: { id: userId },
       data: { username },
       select: {
         id: true,
