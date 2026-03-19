@@ -149,7 +149,7 @@ export const NewsFeed: React.FC = () => {
                     const response = await axios.get("/api/news/bookmarks", {
                         params: {
                             page,
-                            limit: 20,
+                            limit: 100,
                         },
                         headers: { Authorization: `Bearer ${token}` },
                     });
@@ -160,7 +160,7 @@ export const NewsFeed: React.FC = () => {
                     const params: QueryParams = {
                         region,
                         page,
-                        limit: 20,
+                        limit: 100,
                     };
 
                     if (tag) params.tag = tag;
