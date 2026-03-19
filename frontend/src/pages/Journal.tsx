@@ -63,10 +63,6 @@ export default function Journal() {
         description: "",
     });
 
-    // AI Assistant state
-    const [aiResponse, setAiResponse] = useState('');
-    const [aiLoading, setAiLoading] = useState(false);
-
     useEffect(() => {
         const fetchProblems = async () => {
             try {
@@ -91,33 +87,6 @@ export default function Journal() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
-    };
-
-    const callAI = async (type: 'hint' | 'review') => {
-        const selectedProblem = problems.find(p => p.id === selectedId);
-        if (!selectedProblem) return;
-        setAiLoading(true);
-        setAiResponse('');
-        const prompt = type === 'hint'
-            ? `Give a helpful hint (not the full solution) for this coding problem:\n${selectedProblem.problem || selectedProblem.title}`
-            : `Review this solution and give constructive feedback:\nProblem: ${selectedProblem.problem || selectedProblem.title}\nSolution: ${selectedProblem.solution || 'No solution provided yet'}`;
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(buildApiUrl('/api/ai/generate'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ prompt, maxTokens: 300 })
-            });
-            const data = await response.json();
-            setAiResponse(data.text || 'No response');
-        } catch {
-            setAiResponse('Failed to get AI response');
-        } finally {
-            setAiLoading(false);
-        }
     };
 
     const handleDelete = async (id: string) => {
@@ -1384,42 +1353,6 @@ export default function Journal() {
                                 rows={3}
                                 style={{ padding: "8px", borderRadius: "4px", border: "1px solid var(--border)", resize: "vertical" }}
                             />
-
-                            {/* AI Assistant Buttons */}
-                            <div style={{display:'flex', gap:'8px', padding:'8px 0'}}>
-                                <button onClick={() => callAI('hint')} disabled={aiLoading} style={{
-                                    padding:'6px 12px', borderRadius:'6px', fontSize:'12px',
-                                    border:'1px solid #c8401a', background:'transparent',
-                                    color:'#c8401a', cursor:'pointer', fontWeight:600
-                                }}>
-                                    💡 AI Hint
-                                </button>
-                                <button onClick={() => callAI('review')} disabled={aiLoading} style={{
-                                    padding:'6px 12px', borderRadius:'6px', fontSize:'12px',
-                                    border:'1px solid #c8401a', background:'transparent',
-                                    color:'#c8401a', cursor:'pointer', fontWeight:600
-                                }}>
-                                    🔍 AI Review
-                                </button>
-                            </div>
-
-                            {aiLoading && (
-                                <div style={{padding:'12px', color:'var(--ink3)', fontSize:'13px'}}>
-                                    AI is thinking...
-                                </div>
-                            )}
-
-                            {aiResponse && (
-                                <div style={{
-                                    padding:'12px', borderRadius:'8px',
-                                    background:'var(--surface2)', fontSize:'13px',
-                                    color:'var(--ink)', lineHeight:'1.6',
-                                    borderLeft:'3px solid #c8401a', marginTop:'8px'
-                                }}>
-                                    <span style={{fontSize:'11px', fontWeight:600, color:'#c8401a'}}>AI Response</span>
-                                    <p style={{margin:'4px 0 0', whiteSpace:'pre-wrap'}}>{aiResponse}</p>
-                                </div>
-                            )}
 
                             <textarea
                                 value={editData.problem}

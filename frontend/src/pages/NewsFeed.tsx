@@ -72,10 +72,6 @@ export const NewsFeed: React.FC = () => {
     );
     const [toasts, setToasts] = useState<Toast[]>([]);
 
-    // AI Summary state
-    const [summaries, setSummaries] = useState<Record<string, string>>({});
-    const [loadingSummary, setLoadingSummary] = useState<Record<string, boolean>>({});
-
     const tags = ["llm", "open", "reg", "tool", "research"];
 
     // Refreshing state
@@ -228,26 +224,6 @@ export const NewsFeed: React.FC = () => {
                 console.error("Bookmark error response:", err.response?.data);
             }
             showToast("Failed to update bookmark", "error");
-        }
-    };
-
-    const generateSummary = async (article: Article) => {
-        if (summaries[article.id]) return; // already generated
-        setLoadingSummary(prev => ({...prev, [article.id]: true}));
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post('/api/ai/generate', {
-                prompt: `Summarize this article in 2-3 sentences:\nTitle: ${article.title}\nSource: ${article.source}`,
-                maxTokens: 150
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const summary = response.data.text || 'Could not generate summary';
-            setSummaries(prev => ({...prev, [article.id]: summary}));
-        } catch {
-            setSummaries(prev => ({...prev, [article.id]: 'Failed to generate summary'}));
-        } finally {
-            setLoadingSummary(prev => ({...prev, [article.id]: false}));
         }
     };
 
@@ -812,30 +788,6 @@ export const NewsFeed: React.FC = () => {
                                                         ? "🇩🇪 DE"
                                                         : " World"}
                                                 </span>
-                                            </div>
-                                            <div style={{marginTop:'8px'}}>
-                                                {summaries[article.id] ? (
-                                                    <div style={{
-                                                        padding:'10px 12px', borderRadius:'8px',
-                                                        background:'var(--surface2)', fontSize:'12px',
-                                                        color:'var(--ink2)', lineHeight:'1.6',
-                                                        borderLeft:'3px solid #c8401a'
-                                                    }}>
-                                                        <span style={{fontSize:'11px', fontWeight:600, color:'#c8401a'}}>AI Summary</span>
-                                                        <p style={{margin:'4px 0 0'}}>{summaries[article.id]}</p>
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={(e) => { e.preventDefault(); generateSummary(article); }}
-                                                        disabled={loadingSummary[article.id]}
-                                                        style={{
-                                                            padding:'4px 10px', borderRadius:'6px', fontSize:'11px',
-                                                            border:'1px solid #c8401a', background:'transparent',
-                                                            color:'#c8401a', cursor:'pointer', fontWeight:600
-                                                        }}>
-                                                        {loadingSummary[article.id] ? 'Generating...' : '✨ AI Summary'}
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                     </a>
