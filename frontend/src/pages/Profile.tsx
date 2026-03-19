@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -8,7 +8,6 @@ interface UserProfile {
     id: number;
     email: string;
     username: string;
-    displayName: string | null;
     avatar: string | null;
     createdAt: string;
 }
@@ -24,13 +23,10 @@ export default function Profile() {
 
     // Form states
     const [username, setUsername] = useState('');
-    const [displayName, setDisplayName] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [avatar, setAvatar] = useState('');
+    const [usernameError, setUsernameError] = useState('');
+    const [usernameSuccess, setUsernameSuccess] = useState('');
+    const fileRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchProfile();
@@ -48,9 +44,9 @@ export default function Profile() {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            setProfile(response.data.data);
-            setUsername(response.data.data.username || '');
-            setDisplayName(response.data.data.displayName || '');
+            setProfile(response.data);
+            setUsername(response.data.username || '');
+            setAvatar(response.data.avatar || '');
         } catch (err) {
             console.error('Failed to fetch profile:', err);
             setError('Failed to load profile');
@@ -59,35 +55,35 @@ export default function Profile() {
         }
     };
 
-    const handleUpdateProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaving(true);
-        setError('');
-        setMessage('');
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.put(
-                '/api/user/profile',
-                { displayName },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setProfile(response.data.user);
-            setMessage('Profile updated successfully!');
-        } catch (err) {
-            console.error('Failed to update profile:', err);
-            setError('Failed to update profile');
-        } finally {
-            setSaving(false);
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 500000) {
+            setError('Image too large, max 500KB');
+            return;
         }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result as string;
+            setAvatar(base64);
+            // Auto save avatar immediately
+            const token = localStorage.getItem('token');
+            axios.put('/api/user/profile', { avatar: base64 }, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+                .then(() => {
+                    setMessage('Avatar updated!');
+                    setTimeout(() => setMessage(''), 3000);
+                })
+                .catch(() => setError('Failed to update avatar'));
+        };
+        reader.readAsDataURL(file);
     };
 
-    const handleUpdateUsername = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSaveUsername = async () => {
+        setUsernameError('');
+        setUsernameSuccess('');
         setSaving(true);
-        setError('');
-        setMessage('');
 
         try {
             const token = localStorage.getItem('token');
@@ -98,47 +94,10 @@ export default function Profile() {
             );
 
             setProfile(response.data.user);
-            setMessage('Username updated successfully!');
+            setUsernameSuccess('Username updated successfully!');
         } catch (err: any) {
             console.error('Failed to update username:', err);
-            setError(err.response?.data?.error || 'Failed to update username');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleChangePassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
-
-        if (newPassword !== confirmPassword) {
-            setError('New passwords do not match');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            setError('Password must be at least 6 characters');
-            return;
-        }
-
-        setSaving(true);
-
-        try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                '/api/user/password',
-                { currentPassword, newPassword },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setMessage('Password changed successfully!');
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-        } catch (err: any) {
-            console.error('Failed to change password:', err);
-            setError(err.response?.data?.error || 'Failed to change password');
+            setUsernameError(err.response?.data?.error || 'Failed to update username');
         } finally {
             setSaving(false);
         }
@@ -230,6 +189,41 @@ export default function Profile() {
                         </div>
                     )}
 
+                    {/* Avatar Upload */}
+                    <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', marginBottom:'24px'}}>
+                        <div
+                            onClick={() => fileRef.current?.click()}
+                            style={{
+                                width:'100px', height:'100px', borderRadius:'50%',
+                                background: avatar ? 'transparent' : '#c8401a',
+                                display:'flex', alignItems:'center', justifyContent:'center',
+                                cursor:'pointer', overflow:'hidden',
+                                border:'3px solid var(--border)',
+                                position:'relative'
+                            }}>
+                            {avatar
+                                ? <img src={avatar} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="avatar" />
+                                : <span style={{color:'white', fontSize:'36px', fontWeight:700}}>
+                                    {(username || '?').charAt(0).toUpperCase()}
+                                </span>
+                            }
+                            {/* Camera overlay on hover */}
+                            <div style={{
+                                position:'absolute', inset:0, background:'rgba(0,0,0,0.4)',
+                                display:'flex', alignItems:'center', justifyContent:'center',
+                                opacity:0, transition:'opacity 0.2s',
+                                borderRadius:'50%'
+                            }}
+                            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+                            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = '0')}
+                            >
+                                <span style={{fontSize:'24px'}}>📷</span>
+                            </div>
+                        </div>
+                        <p style={{fontSize:'12px', color:'var(--ink3)'}}>Click to change avatar (max 500KB)</p>
+                        <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{display:'none'}} />
+                    </div>
+
                     {/* Profile Info */}
                     <div
                         style={{
@@ -251,7 +245,7 @@ export default function Profile() {
                             <div style={{ fontSize: '14px', color: 'var(--ink)' }}>{profile?.email}</div>
                         </div>
 
-                        <div>
+                        <div style={{ marginBottom: '12px' }}>
                             <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '4px' }}>
                                 Member Since
                             </label>
@@ -259,11 +253,19 @@ export default function Profile() {
                                 {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}
                             </div>
                         </div>
+
+                        <div>
+                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '4px' }}>
+                                User ID
+                            </label>
+                            <div style={{ fontSize: '14px', color: 'var(--ink)' }}>
+                                {profile?.id ? String(profile.id).substring(0, 8) : 'N/A'}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Update Username */}
-                    <form
-                        onSubmit={handleUpdateUsername}
+                    <div
                         style={{
                             background: 'var(--surface)',
                             border: '1px solid var(--border)',
@@ -276,18 +278,44 @@ export default function Profile() {
                             Username
                         </h2>
 
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '8px' }}>
-                                Username
-                            </label>
+                        {usernameError && (
+                            <div
+                                style={{
+                                    padding: '12px 16px',
+                                    borderRadius: '8px',
+                                    background: '#f8d7da',
+                                    color: '#721c24',
+                                    marginBottom: '16px',
+                                    fontSize: '13px',
+                                }}
+                            >
+                                {usernameError}
+                            </div>
+                        )}
+
+                        {usernameSuccess && (
+                            <div
+                                style={{
+                                    padding: '12px 16px',
+                                    borderRadius: '8px',
+                                    background: '#d4edda',
+                                    color: '#155724',
+                                    marginBottom: '16px',
+                                    fontSize: '13px',
+                                }}
+                            >
+                                {usernameSuccess}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 placeholder="Enter username"
-                                required
                                 style={{
-                                    width: '100%',
+                                    flex: 1,
                                     padding: '10px 12px',
                                     borderRadius: '6px',
                                     border: '1px solid var(--border)',
@@ -296,231 +324,26 @@ export default function Profile() {
                                     color: 'var(--ink)',
                                 }}
                             />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            style={{
-                                padding: '10px 20px',
-                                borderRadius: '6px',
-                                border: 'none',
-                                background: '#c8401a',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: saving ? 'not-allowed' : 'pointer',
-                                opacity: saving ? 0.6 : 1,
-                            }}
-                        >
-                            {saving ? 'Saving...' : 'Update Username'}
-                        </button>
-                    </form>
-
-                    {/* Update Display Name */}
-                    <form
-                        onSubmit={handleUpdateProfile}
-                        style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px',
-                            padding: '20px',
-                            marginBottom: '24px',
-                        }}
-                    >
-                        <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--ink)' }}>
-                            Display Name
-                        </h2>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '8px' }}>
-                                Display Name (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                placeholder="Enter display name"
+                            <button
+                                onClick={handleSaveUsername}
+                                disabled={saving}
                                 style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
+                                    padding: '10px 20px',
                                     borderRadius: '6px',
-                                    border: '1px solid var(--border)',
-                                    background: 'var(--bg)',
+                                    border: 'none',
+                                    background: '#c8401a',
+                                    color: 'white',
                                     fontSize: '14px',
-                                    color: 'var(--ink)',
+                                    fontWeight: 600,
+                                    cursor: saving ? 'not-allowed' : 'pointer',
+                                    opacity: saving ? 0.6 : 1,
+                                    whiteSpace: 'nowrap',
                                 }}
-                            />
+                            >
+                                {saving ? 'Saving...' : 'Save'}
+                            </button>
                         </div>
-
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            style={{
-                                padding: '10px 20px',
-                                borderRadius: '6px',
-                                border: 'none',
-                                background: '#c8401a',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: saving ? 'not-allowed' : 'pointer',
-                                opacity: saving ? 0.6 : 1,
-                            }}
-                        >
-                            {saving ? 'Saving...' : 'Update Profile'}
-                        </button>
-                    </form>
-
-                    {/* Change Password */}
-                    <form
-                        onSubmit={handleChangePassword}
-                        style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '8px',
-                            padding: '20px',
-                        }}
-                    >
-                        <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--ink)' }}>
-                            Change Password
-                        </h2>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '8px' }}>
-                                Current Password
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showCurrentPassword ? 'text' : 'password'}
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 40px 10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid var(--border)',
-                                        background: 'var(--bg)',
-                                        fontSize: '14px',
-                                        color: 'var(--ink)',
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '18px',
-                                    }}
-                                >
-                                    {showCurrentPassword ? '👁️' : '👁️‍🗨️'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '8px' }}>
-                                New Password
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showNewPassword ? 'text' : 'password'}
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 40px 10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid var(--border)',
-                                        background: 'var(--bg)',
-                                        fontSize: '14px',
-                                        color: 'var(--ink)',
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowNewPassword(!showNewPassword)}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '18px',
-                                    }}
-                                >
-                                    {showNewPassword ? '👁️' : '👁️‍🗨️'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--ink2)', display: 'block', marginBottom: '8px' }}>
-                                Confirm New Password
-                            </label>
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 40px 10px 12px',
-                                        borderRadius: '6px',
-                                        border: '1px solid var(--border)',
-                                        background: 'var(--bg)',
-                                        fontSize: '14px',
-                                        color: 'var(--ink)',
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        border: 'none',
-                                        background: 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '18px',
-                                    }}
-                                >
-                                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            style={{
-                                padding: '10px 20px',
-                                borderRadius: '6px',
-                                border: 'none',
-                                background: '#c8401a',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                cursor: saving ? 'not-allowed' : 'pointer',
-                                opacity: saving ? 0.6 : 1,
-                            }}
-                        >
-                            {saving ? 'Changing...' : 'Change Password'}
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
