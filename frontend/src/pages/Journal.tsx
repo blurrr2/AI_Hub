@@ -102,17 +102,17 @@ export default function Journal() {
             ? `Give a helpful hint (not the full solution) for this coding problem:\n${selectedProblem.problem || selectedProblem.title}`
             : `Review this solution and give constructive feedback:\nProblem: ${selectedProblem.problem || selectedProblem.title}\nSolution: ${selectedProblem.solution || 'No solution provided yet'}`;
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            const token = localStorage.getItem('token');
+            const response = await fetch(buildApiUrl('/api/ai/generate'), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 300,
-                    messages: [{ role: 'user', content: prompt }]
-                })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ prompt, maxTokens: 300 })
             });
             const data = await response.json();
-            setAiResponse(data.content?.[0]?.text || 'No response');
+            setAiResponse(data.text || 'No response');
         } catch {
             setAiResponse('Failed to get AI response');
         } finally {

@@ -235,20 +235,14 @@ export const NewsFeed: React.FC = () => {
         if (summaries[article.id]) return; // already generated
         setLoadingSummary(prev => ({...prev, [article.id]: true}));
         try {
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 150,
-                    messages: [{
-                        role: 'user',
-                        content: `Summarize this article in 2-3 sentences:\nTitle: ${article.title}\nSource: ${article.source}`
-                    }]
-                })
+            const token = localStorage.getItem('token');
+            const response = await axios.post('/api/ai/generate', {
+                prompt: `Summarize this article in 2-3 sentences:\nTitle: ${article.title}\nSource: ${article.source}`,
+                maxTokens: 150
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            const data = await response.json();
-            const summary = data.content?.[0]?.text || 'Could not generate summary';
+            const summary = response.data.text || 'Could not generate summary';
             setSummaries(prev => ({...prev, [article.id]: summary}));
         } catch {
             setSummaries(prev => ({...prev, [article.id]: 'Failed to generate summary'}));
