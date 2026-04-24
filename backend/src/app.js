@@ -13,12 +13,7 @@ const app = express();
 // Middleware
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173",
-            "https://ai-hub-umber.vercel.app",
-            "https://*.vercel.app",
-            "https://blurrr2.github.io",
-        ],
+        origin: true,
         credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "Accept"],
