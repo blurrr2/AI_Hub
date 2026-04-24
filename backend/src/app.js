@@ -16,7 +16,7 @@ app.use(
         origin: [
             "http://localhost:5173",
             "https://ai-hub-umber.vercel.app", // 你的正式域名
-            "https://*.vercel.app", // 所有 vercel 预览域名
+            "https://*.vercel.app", // 所有 Vercel 预览域名
             "https://blurrr2.github.io",
         ],
         credentials: true,
