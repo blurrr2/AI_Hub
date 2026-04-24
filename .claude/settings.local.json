@@ -15,7 +15,9 @@
       "Bash(node generate-icons.js)",
       "Bash(npm run build)",
       "Bash(git commit:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)"
     ]
   }
 }
